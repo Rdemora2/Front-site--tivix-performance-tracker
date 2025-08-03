@@ -19,6 +19,7 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import useAppStore from "../store/useAppStore";
+import PermissionGuard from "../components/PermissionGuard";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -49,12 +50,14 @@ const DashboardHome = () => {
             time.
           </Text>
         </div>
-        <Button
-          leftSection={<IconUserPlus size={16} />}
-          onClick={() => navigate("/add-developer")}
-        >
-          Adicionar Novo Membro
-        </Button>
+        <PermissionGuard action="create" resource="developers">
+          <Button
+            leftSection={<IconUserPlus size={16} />}
+            onClick={() => navigate("/add-developer")}
+          >
+            Adicionar Novo Membro
+          </Button>
+        </PermissionGuard>
       </Group>
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg" mb="xl">

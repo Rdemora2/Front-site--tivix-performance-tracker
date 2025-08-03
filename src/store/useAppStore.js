@@ -1,17 +1,160 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import api from "../services/api";
+import api, { tokenUtils, hasPermission } from "../services/api";
 
 const useAppStore = create(
   persist(
     (set, get) => ({
+      user: null,
+      isAuthenticated: false,
+
       developers: [],
       archivedDevelopers: [],
       teams: [],
       performanceReports: [],
+      users: [], // Lista de usuários (apenas para admin)
       darkMode: true,
       loading: false,
       error: null,
+
+      login: async (credentials) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.login(credentials);
+
+          if (response.data?.token) {
+            tokenUtils.set(response.data.token);
+            set({
+              user: response.data.user,
+              isAuthenticated: true,
+              loading: false,
+            });
+            return response.data;
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      register: async (userData) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.register(userData);
+
+          if (response.data?.token) {
+            tokenUtils.set(response.data.token);
+            set({
+              user: response.data.user,
+              isAuthenticated: true,
+              loading: false,
+            });
+            return response.data;
+          }
+        } catch (error) {
+          console.error("Register error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      // Admin cria usuário com senha temporária
+      createUser: async (userData) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.createUser(userData);
+          set({ loading: false });
+          return response.data;
+        } catch (error) {
+          console.error("Create user error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      // Definir nova senha (primeiro acesso)
+      setNewPassword: async (passwordData) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.setNewPassword(passwordData);
+          
+          if (response.data?.token) {
+            tokenUtils.set(response.data.token);
+            set({
+              user: response.data.user,
+              isAuthenticated: true,
+              loading: false,
+            });
+            return response.data;
+          }
+        } catch (error) {
+          console.error("Set new password error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      // Alterar senha
+      changePassword: async (passwordData) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.changePassword(passwordData);
+          set({ loading: false });
+          return response.data;
+        } catch (error) {
+          console.error("Change password error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      // Buscar lista de usuários (Admin apenas)
+      fetchUsers: async () => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.getUsers();
+          set({ users: response.data || [], loading: false });
+          return response.data;
+        } catch (error) {
+          console.error("Error fetching users:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      logout: () => {
+        tokenUtils.remove();
+        set({
+          user: null,
+          isAuthenticated: false,
+          developers: [],
+          archivedDevelopers: [],
+          teams: [],
+          performanceReports: [],
+          users: [],
+        });
+      },
+
+      loadUserProfile: async () => {
+        try {
+          if (!tokenUtils.isValid()) {
+            get().logout();
+            return;
+          }
+
+          const response = await api.auth.profile();
+          set({
+            user: response.data,
+            isAuthenticated: true,
+          });
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+          get().logout();
+        }
+      },
+
+      hasPermission: (action, resource) => hasPermission(action, resource),
 
       setLoading: (loading) => set({ loading }),
       setError: (error) => set({ error }),
@@ -59,12 +202,19 @@ const useAppStore = create(
       },
 
       initializeStore: async () => {
-        const { fetchTeams, fetchDevelopers, fetchPerformanceReports } = get();
-        await Promise.all([
-          fetchTeams(),
-          fetchDevelopers(true),
-          fetchPerformanceReports(),
-        ]);
+        if (tokenUtils.isValid()) {
+          await get().loadUserProfile();
+        }
+
+        if (get().isAuthenticated) {
+          const { fetchTeams, fetchDevelopers, fetchPerformanceReports } =
+            get();
+          await Promise.all([
+            fetchTeams(),
+            fetchDevelopers(true),
+            fetchPerformanceReports(),
+          ]);
+        }
       },
 
       addDeveloper: async (developer) => {
@@ -276,6 +426,8 @@ const useAppStore = create(
       name: "tivix-performance-tracker-storage",
       partialize: (state) => ({
         darkMode: state.darkMode,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )
