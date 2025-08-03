@@ -1,37 +1,37 @@
 import {
   Container,
   Title,
-  Grid,
-  Card,
   Text,
-  Badge,
-  Button,
   Group,
-  ActionIcon,
+  Button,
+  Card,
+  Grid,
   Modal,
   TextInput,
   Select,
-  Tabs,
+  Textarea,
+  ActionIcon,
+  Badge,
   Menu,
+  Tabs,
   ColorInput,
 } from "@mantine/core";
 import {
   IconPlus,
   IconUser,
-  IconFileReport,
-  IconTrendingUp,
+  IconUsers,
+  IconDots,
   IconArchive,
   IconRestore,
-  IconDots,
-  IconUsers,
+  IconFileReport,
+  IconTrendingUp,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import useAppStore from "../store/useAppStore";
-import { createDeveloper, createTeam } from "../types";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -77,61 +77,90 @@ const Dashboard = () => {
     },
   });
 
-  const handleAddDeveloper = (values) => {
-    const newDeveloper = createDeveloper(
-      Date.now().toString(),
-      values.name,
-      values.role,
-      0,
-      values.teamId || null
-    );
+  const handleAddDeveloper = async (values) => {
+    try {
+      const developerData = {
+        name: values.name,
+        role: values.role,
+        teamId: values.teamId || null,
+      };
 
-    addDeveloper(newDeveloper);
-    notifications.show({
-      title: "Sucesso",
-      message: "Desenvolvedor adicionado com sucesso!",
-      color: "green",
-    });
+      await addDeveloper(developerData);
+      notifications.show({
+        title: "Sucesso",
+        message: "Desenvolvedor adicionado com sucesso!",
+        color: "green",
+      });
 
-    form.reset();
-    close();
+      form.reset();
+      close();
+    } catch {
+      notifications.show({
+        title: "Erro",
+        message: "Erro ao adicionar desenvolvedor. Tente novamente.",
+        color: "red",
+      });
+    }
   };
 
-  const handleAddTeam = (values) => {
-    const newTeam = createTeam(
-      Date.now().toString(),
-      values.name,
-      values.description,
-      values.color
-    );
+  const handleAddTeam = async (values) => {
+    try {
+      const teamData = {
+        name: values.name,
+        description: values.description || "",
+        color: values.color || "blue",
+      };
 
-    addTeam(newTeam);
-    notifications.show({
-      title: "Sucesso",
-      message: "Time criado com sucesso!",
-      color: "green",
-    });
+      await addTeam(teamData);
+      notifications.show({
+        title: "Sucesso",
+        message: "Time criado com sucesso!",
+        color: "green",
+      });
 
-    teamForm.reset();
-    closeTeamModal();
+      teamForm.reset();
+      closeTeamModal();
+    } catch {
+      notifications.show({
+        title: "Erro",
+        message: "Erro ao criar time. Tente novamente.",
+        color: "red",
+      });
+    }
   };
 
-  const handleArchiveDeveloper = (id, name) => {
-    archiveDeveloper(id);
-    notifications.show({
-      title: "Desenvolvedor Arquivado",
-      message: `${name} foi movido para a aba de arquivados.`,
-      color: "blue",
-    });
+  const handleArchiveDeveloper = async (id, name) => {
+    try {
+      await archiveDeveloper(id);
+      notifications.show({
+        title: "Desenvolvedor Arquivado",
+        message: `${name} foi movido para a aba de arquivados.`,
+        color: "blue",
+      });
+    } catch {
+      notifications.show({
+        title: "Erro",
+        message: "Erro ao arquivar desenvolvedor. Tente novamente.",
+        color: "red",
+      });
+    }
   };
 
-  const handleRestoreDeveloper = (id, name) => {
-    restoreDeveloper(id);
-    notifications.show({
-      title: "Desenvolvedor Restaurado",
-      message: `${name} foi restaurado para a equipe ativa.`,
-      color: "green",
-    });
+  const handleRestoreDeveloper = async (id, name) => {
+    try {
+      await restoreDeveloper(id);
+      notifications.show({
+        title: "Desenvolvedor Restaurado",
+        message: `${name} foi restaurado para a equipe ativa.`,
+        color: "green",
+      });
+    } catch {
+      notifications.show({
+        title: "Erro",
+        message: "Erro ao restaurar desenvolvedor. Tente novamente.",
+        color: "red",
+      });
+    }
   };
 
   const getPerformanceColor = (score) => {

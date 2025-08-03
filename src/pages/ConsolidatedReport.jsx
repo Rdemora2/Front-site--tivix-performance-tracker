@@ -93,11 +93,57 @@ const ConsolidatedReport = () => {
       id: "pdf-generation",
     });
 
-    html2canvas(input, {
+    const pdfStyle = document.createElement("style");
+    pdfStyle.id = "pdf-export-style";
+    pdfStyle.textContent = `
+      #consolidated-report-content * {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        border-color: #cccccc !important;
+      }
+      #consolidated-report-content .mantine-Badge-root {
+        background-color: #e3f2fd !important;
+        color: #1976d2 !important;
+      }
+      #consolidated-report-content .mantine-Text-root[data-c="blue"] {
+        color: #1976d2 !important;
+      }
+      #consolidated-report-content .mantine-Text-root[data-c="green"] {
+        color: #388e3c !important;
+      }
+      #consolidated-report-content .mantine-Text-root[data-c="orange"] {
+        color: #f57c00 !important;
+      }
+      #consolidated-report-content .mantine-Text-root[data-c="red"] {
+        color: #d32f2f !important;
+      }
+    `;
+    document.head.appendChild(pdfStyle);
+
+    const options = {
       scale: 2,
       useCORS: true,
-    })
+      allowTaint: true,
+      backgroundColor: "#ffffff",
+      onclone: (clonedDoc) => {
+        const styles = clonedDoc.querySelectorAll(
+          'style, link[rel="stylesheet"]'
+        );
+        styles.forEach((style) => {
+          if (style.textContent && style.textContent.includes("oklch")) {
+            style.remove();
+          }
+        });
+      },
+    };
+
+    html2canvas(input, options)
       .then((canvas) => {
+        const tempStyle = document.getElementById("pdf-export-style");
+        if (tempStyle) {
+          tempStyle.remove();
+        }
+
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF("p", "mm", "a4");
         const imgWidth = 210;
@@ -127,6 +173,11 @@ const ConsolidatedReport = () => {
         });
       })
       .catch((error) => {
+        const tempStyle = document.getElementById("pdf-export-style");
+        if (tempStyle) {
+          tempStyle.remove();
+        }
+
         console.error("Erro ao gerar PDF:", error);
         notifications.update({
           id: "pdf-generation",

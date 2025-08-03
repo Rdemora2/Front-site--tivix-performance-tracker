@@ -82,15 +82,15 @@ const CreateReport = () => {
   const prevStep = () =>
     setActive((current) => (current > 0 ? current - 1 : current));
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     try {
       const questionScores = {};
       allQuestions.forEach((question) => {
         questionScores[question.key] = values[question.key];
       });
 
-      const report = createPerformanceReport(
-        Date.now().toString(),
+      const reportCalculation = createPerformanceReport(
+        "",
         id,
         values.month,
         questionScores,
@@ -98,7 +98,17 @@ const CreateReport = () => {
         values.pointsToDevelop
       );
 
-      addPerformanceReport(report);
+      const reportData = {
+        developerId: id,
+        month: values.month,
+        questionScores,
+        categoryScores: reportCalculation.categoryScores,
+        weightedAverageScore: reportCalculation.weightedAverageScore,
+        highlights: values.highlights,
+        pointsToDevelop: values.pointsToDevelop,
+      };
+
+      await addPerformanceReport(reportData);
 
       notifications.show({
         title: "Sucesso",
