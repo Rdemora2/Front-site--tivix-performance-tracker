@@ -1,126 +1,161 @@
-import { Container, Title, Card, Text, Group, Button, Select, Table, Badge, Paper, Stack } from '@mantine/core';
-import { IconArrowLeft, IconDownload, IconFileTypePdf, IconCheck, IconX } from '@tabler/icons-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { notifications } from '@mantine/notifications';
-import useAppStore from '../store/useAppStore';
-import { EVALUATION_CATEGORIES } from '../types';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import {
+  Container,
+  Title,
+  Card,
+  Text,
+  Group,
+  Button,
+  Select,
+  Table,
+  Badge,
+  Paper,
+  Stack,
+} from "@mantine/core";
+import {
+  IconArrowLeft,
+  IconDownload,
+  IconFileTypePdf,
+  IconCheck,
+  IconX,
+} from "@tabler/icons-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { notifications } from "@mantine/notifications";
+import useAppStore from "../store/useAppStore";
+import { EVALUATION_CATEGORIES } from "../types";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const ConsolidatedReport = () => {
   const navigate = useNavigate();
   const { developers, performanceReports } = useAppStore();
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState("");
 
-  // Get available months from reports
-  const availableMonths = [...new Set(performanceReports.map(report => report.month))]
+  const availableMonths = [
+    ...new Set(performanceReports.map((report) => report.month)),
+  ]
     .sort((a, b) => new Date(b) - new Date(a))
-    .map(month => ({
+    .map((month) => ({
       value: month,
-      label: new Date(month + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+      label: new Date(month + "-01").toLocaleDateString("pt-BR", {
+        month: "long",
+        year: "numeric",
+      }),
     }));
 
-  // Filter reports by selected month
-  const monthlyReports = selectedMonth 
-    ? performanceReports.filter(report => report.month === selectedMonth)
+  const monthlyReports = selectedMonth
+    ? performanceReports.filter((report) => report.month === selectedMonth)
     : [];
 
-  // Prepare table data
-  const tableData = monthlyReports.map(report => {
-    const developer = developers.find(dev => dev.id === report.developerId);
-    return {
-      ...report,
-      developerName: developer?.name || 'N/A',
-      developerRole: developer?.role || 'N/A',
-    };
-  }).sort((a, b) => b.weightedAverageScore - a.weightedAverageScore);
+  const tableData = monthlyReports
+    .map((report) => {
+      const developer = developers.find((dev) => dev.id === report.developerId);
+      return {
+        ...report,
+        developerName: developer?.name || "N/A",
+        developerRole: developer?.role || "N/A",
+      };
+    })
+    .sort((a, b) => b.weightedAverageScore - a.weightedAverageScore);
 
   const getPerformanceColor = (score) => {
-    if (score >= 8) return 'green';
-    if (score >= 6) return 'yellow';
-    if (score >= 4) return 'orange';
-    return 'red';
+    if (score >= 8) return "green";
+    if (score >= 6) return "yellow";
+    if (score >= 4) return "orange";
+    return "red";
   };
 
   const getPerformanceLabel = (score) => {
-    if (score >= 8) return 'Excelente';
-    if (score >= 6) return 'Bom';
-    if (score >= 4) return 'Regular';
-    return 'Precisa Melhorar';
+    if (score >= 8) return "Excelente";
+    if (score >= 6) return "Bom";
+    if (score >= 4) return "Regular";
+    return "Precisa Melhorar";
   };
 
   const handleExportPDF = () => {
-    const input = document.getElementById('consolidated-report-content');
+    const input = document.getElementById("consolidated-report-content");
     if (!input) {
       notifications.show({
-        title: 'Erro',
-        message: 'Não foi possível encontrar o conteúdo do relatório para exportar.',
-        color: 'red',
+        title: "Erro",
+        message:
+          "Não foi possível encontrar o conteúdo do relatório para exportar.",
+        color: "red",
       });
       return;
     }
 
     notifications.show({
-      title: 'Gerando PDF',
-      message: 'Por favor, aguarde enquanto o relatório é gerado...', 
-      color: 'blue',
+      title: "Gerando PDF",
+      message: "Por favor, aguarde enquanto o relatório é gerado...",
+      color: "blue",
       loading: true,
       autoClose: false,
-      id: 'pdf-generation',
+      id: "pdf-generation",
     });
 
     html2canvas(input, {
-      scale: 2, // Increase scale for better quality
-      useCORS: true, // Enable CORS if you have external images
-    }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      scale: 2,
+      useCORS: true,
+    })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgWidth = 210;
+        const pageHeight = 297;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
-      }
 
-      pdf.save(`relatorio-consolidado-${selectedMonth}.pdf`);
-      notifications.update({
-        id: 'pdf-generation',
-        title: 'Sucesso',
-        message: 'Relatório PDF gerado com sucesso!',
-        color: 'green',
-        icon: <IconCheck size={16} />,
-        autoClose: 5000,
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(`relatorio-consolidado-${selectedMonth}.pdf`);
+        notifications.update({
+          id: "pdf-generation",
+          title: "Sucesso",
+          message: "Relatório PDF gerado com sucesso!",
+          color: "green",
+          icon: <IconCheck size={16} />,
+          autoClose: 5000,
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao gerar PDF:", error);
+        notifications.update({
+          id: "pdf-generation",
+          title: "Erro",
+          message: "Ocorreu um erro ao gerar o PDF. Tente novamente.",
+          color: "red",
+          icon: <IconX size={16} />,
+          autoClose: 5000,
+        });
       });
-    }).catch(error => {
-      console.error('Erro ao gerar PDF:', error);
-      notifications.update({
-        id: 'pdf-generation',
-        title: 'Erro',
-        message: 'Ocorreu um erro ao gerar o PDF. Tente novamente.',
-        color: 'red',
-        icon: <IconX size={16} />,
-        autoClose: 5000,
-      });
-    });
   };
 
-  // Calculate team statistics
-  const teamStats = monthlyReports.length > 0 ? {
-    averageScore: monthlyReports.reduce((sum, report) => sum + report.weightedAverageScore, 0) / monthlyReports.length,
-    highestScore: Math.max(...monthlyReports.map(report => report.weightedAverageScore)),
-    lowestScore: Math.min(...monthlyReports.map(report => report.weightedAverageScore)),
-    totalEvaluations: monthlyReports.length
-  } : null;
+  const teamStats =
+    monthlyReports.length > 0
+      ? {
+          averageScore:
+            monthlyReports.reduce(
+              (sum, report) => sum + report.weightedAverageScore,
+              0
+            ) / monthlyReports.length,
+          highestScore: Math.max(
+            ...monthlyReports.map((report) => report.weightedAverageScore)
+          ),
+          lowestScore: Math.min(
+            ...monthlyReports.map((report) => report.weightedAverageScore)
+          ),
+          totalEvaluations: monthlyReports.length,
+        }
+      : null;
 
   return (
     <Container size="xl">
@@ -128,7 +163,7 @@ const ConsolidatedReport = () => {
         <Button
           variant="subtle"
           leftSection={<IconArrowLeft size={16} />}
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
         >
           Voltar ao Dashboard
         </Button>
@@ -136,8 +171,12 @@ const ConsolidatedReport = () => {
 
       <Group justify="space-between" mb="xl">
         <div>
-          <Title order={1} mb="xs">Relatório Consolidado</Title>
-          <Text c="dimmed">Performance da equipe para apresentação à diretoria</Text>
+          <Title order={1} mb="xs">
+            Relatório Consolidado
+          </Title>
+          <Text c="dimmed">
+            Performance da equipe para apresentação à diretoria
+          </Text>
         </div>
         {selectedMonth && tableData.length > 0 && (
           <Button
@@ -156,7 +195,7 @@ const ConsolidatedReport = () => {
             {availableMonths.length} meses disponíveis
           </Text>
         </Group>
-        
+
         <Select
           placeholder="Selecione o mês para visualizar o relatório"
           data={availableMonths}
@@ -168,31 +207,41 @@ const ConsolidatedReport = () => {
       </Card>
 
       {selectedMonth && (
-        <div id="consolidated-report-content"> {/* ID for PDF export */}
+        <div id="consolidated-report-content">
           {teamStats && (
             <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
-              <Title order={3} mb="md">Estatísticas da Equipe</Title>
+              <Title order={3} mb="md">
+                Estatísticas da Equipe
+              </Title>
               <Group grow>
                 <Paper p="md" withBorder>
-                  <Text size="sm" c="dimmed" mb="xs">Performance Média</Text>
+                  <Text size="sm" c="dimmed" mb="xs">
+                    Performance Média
+                  </Text>
                   <Text size="xl" fw={700} c="blue">
                     {teamStats.averageScore.toFixed(1)}/10
                   </Text>
                 </Paper>
                 <Paper p="md" withBorder>
-                  <Text size="sm" c="dimmed" mb="xs">Maior Nota</Text>
+                  <Text size="sm" c="dimmed" mb="xs">
+                    Maior Nota
+                  </Text>
                   <Text size="xl" fw={700} c="green">
                     {teamStats.highestScore.toFixed(1)}/10
                   </Text>
                 </Paper>
                 <Paper p="md" withBorder>
-                  <Text size="sm" c="dimmed" mb="xs">Menor Nota</Text>
+                  <Text size="sm" c="dimmed" mb="xs">
+                    Menor Nota
+                  </Text>
                   <Text size="xl" fw={700} c="orange">
                     {teamStats.lowestScore.toFixed(1)}/10
                   </Text>
                 </Paper>
                 <Paper p="md" withBorder>
-                  <Text size="sm" c="dimmed" mb="xs">Total de Avaliações</Text>
+                  <Text size="sm" c="dimmed" mb="xs">
+                    Total de Avaliações
+                  </Text>
                   <Text size="xl" fw={700}>
                     {teamStats.totalEvaluations}
                   </Text>
@@ -204,7 +253,8 @@ const ConsolidatedReport = () => {
           <Card shadow="sm" padding="lg" radius="md" withBorder>
             <Group justify="space-between" mb="md">
               <Title order={3}>
-                Performance da Equipe - {availableMonths.find(m => m.value === selectedMonth)?.label}
+                Performance da Equipe -{" "}
+                {availableMonths.find((m) => m.value === selectedMonth)?.label}
               </Title>
               <Text size="sm" c="dimmed">
                 {tableData.length} avaliações
@@ -220,7 +270,7 @@ const ConsolidatedReport = () => {
                     <Table.Th>Cargo</Table.Th>
                     <Table.Th>Performance Final</Table.Th>
                     <Table.Th>Status</Table.Th>
-                    {Object.values(EVALUATION_CATEGORIES).map(category => (
+                    {Object.values(EVALUATION_CATEGORIES).map((category) => (
                       <Table.Th key={category.label}>{category.label}</Table.Th>
                     ))}
                   </Table.Tr>
@@ -244,16 +294,18 @@ const ConsolidatedReport = () => {
                       </Table.Td>
                       <Table.Td>
                         <Badge
-                          color={getPerformanceColor(report.weightedAverageScore)}
+                          color={getPerformanceColor(
+                            report.weightedAverageScore
+                          )}
                           variant="light"
                         >
                           {getPerformanceLabel(report.weightedAverageScore)}
                         </Badge>
                       </Table.Td>
-                      {Object.keys(EVALUATION_CATEGORIES).map(key => (
+                      {Object.keys(EVALUATION_CATEGORIES).map((key) => (
                         <Table.Td key={key}>
                           <Text size="sm">
-                            {report.categoryScores[key]?.toFixed(1) || 'N/A'}
+                            {report.categoryScores[key]?.toFixed(1) || "N/A"}
                           </Text>
                         </Table.Td>
                       ))}
@@ -270,22 +322,30 @@ const ConsolidatedReport = () => {
 
           {tableData.length > 0 && (
             <Card shadow="sm" padding="lg" radius="md" withBorder mt="xl">
-              <Title order={3} mb="md">Observações Qualitativas</Title>
+              <Title order={3} mb="md">
+                Observações Qualitativas
+              </Title>
               <Stack gap="md">
-                {tableData.map(report => (
+                {tableData.map((report) => (
                   <Paper key={report.id} p="md" withBorder>
-                    <Text fw={500} mb="xs">{report.developerName}</Text>
+                    <Text fw={500} mb="xs">
+                      {report.developerName}
+                    </Text>
                     <Group grow align="flex-start">
                       <div>
-                        <Text size="sm" fw={500} c="green" mb="xs">Destaques:</Text>
+                        <Text size="sm" fw={500} c="green" mb="xs">
+                          Destaques:
+                        </Text>
                         <Text size="sm" c="dimmed">
-                          {report.highlights || 'Nenhum destaque registrado'}
+                          {report.highlights || "Nenhum destaque registrado"}
                         </Text>
                       </div>
                       <div>
-                        <Text size="sm" fw={500} c="orange" mb="xs">Pontos a Desenvolver:</Text>
+                        <Text size="sm" fw={500} c="orange" mb="xs">
+                          Pontos a Desenvolver:
+                        </Text>
                         <Text size="sm" c="dimmed">
-                          {report.pointsToDevelop || 'Nenhum ponto registrado'}
+                          {report.pointsToDevelop || "Nenhum ponto registrado"}
                         </Text>
                       </div>
                     </Group>
@@ -299,9 +359,11 @@ const ConsolidatedReport = () => {
 
       {!selectedMonth && (
         <Card shadow="sm" padding="xl" radius="md" withBorder>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: "center" }}>
             <IconDownload size={48} color="var(--mantine-color-gray-5)" />
-            <Title order={3} mt="md" mb="xs">Selecione um Período</Title>
+            <Title order={3} mt="md" mb="xs">
+              Selecione um Período
+            </Title>
             <Text c="dimmed">
               Escolha um mês para visualizar o relatório consolidado da equipe
             </Text>
@@ -313,6 +375,3 @@ const ConsolidatedReport = () => {
 };
 
 export default ConsolidatedReport;
-
-
-

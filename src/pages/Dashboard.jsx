@@ -1,40 +1,79 @@
-import { Container, Title, Grid, Card, Text, Badge, Button, Group, ActionIcon, Modal, TextInput, Select, Tabs, Menu, ColorInput } from '@mantine/core';
-import { IconPlus, IconUser, IconFileReport, IconTrendingUp, IconArchive, IconRestore, IconDots, IconUsers } from '@tabler/icons-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDisclosure } from '@mantine/hooks';
-import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
-import useAppStore from '../store/useAppStore';
-import { createDeveloper, createTeam } from '../types';
+import {
+  Container,
+  Title,
+  Grid,
+  Card,
+  Text,
+  Badge,
+  Button,
+  Group,
+  ActionIcon,
+  Modal,
+  TextInput,
+  Select,
+  Tabs,
+  Menu,
+  ColorInput,
+} from "@mantine/core";
+import {
+  IconPlus,
+  IconUser,
+  IconFileReport,
+  IconTrendingUp,
+  IconArchive,
+  IconRestore,
+  IconDots,
+  IconUsers,
+} from "@tabler/icons-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDisclosure } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
+import useAppStore from "../store/useAppStore";
+import { createDeveloper, createTeam } from "../types";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
-  const [teamModalOpened, { open: openTeamModal, close: closeTeamModal }] = useDisclosure(false);
-  const [activeTab, setActiveTab] = useState('active');
-  const { developers, archivedDevelopers, teams, addDeveloper, addTeam, archiveDeveloper, restoreDeveloper, updateDeveloper } = useAppStore();
+  const [teamModalOpened, { open: openTeamModal, close: closeTeamModal }] =
+    useDisclosure(false);
+  const [activeTab, setActiveTab] = useState("active");
+  const {
+    developers,
+    archivedDevelopers,
+    teams,
+    addDeveloper,
+    addTeam,
+    archiveDeveloper,
+    restoreDeveloper,
+  } = useAppStore();
 
   const form = useForm({
     initialValues: {
-      name: '',
-      role: '',
-      teamId: '',
+      name: "",
+      role: "",
+      teamId: "",
     },
     validate: {
-      name: (value) => (value.length < 2 ? 'Nome deve ter pelo menos 2 caracteres' : null),
-      role: (value) => (value.length < 2 ? 'Cargo deve ter pelo menos 2 caracteres' : null),
+      name: (value) =>
+        value.length < 2 ? "Nome deve ter pelo menos 2 caracteres" : null,
+      role: (value) =>
+        value.length < 2 ? "Cargo deve ter pelo menos 2 caracteres" : null,
     },
   });
 
   const teamForm = useForm({
     initialValues: {
-      name: '',
-      description: '',
-      color: 'blue',
+      name: "",
+      description: "",
+      color: "blue",
     },
     validate: {
-      name: (value) => (value.length < 2 ? 'Nome do time deve ter pelo menos 2 caracteres' : null),
+      name: (value) =>
+        value.length < 2
+          ? "Nome do time deve ter pelo menos 2 caracteres"
+          : null,
     },
   });
 
@@ -46,14 +85,14 @@ const Dashboard = () => {
       0,
       values.teamId || null
     );
-    
+
     addDeveloper(newDeveloper);
     notifications.show({
-      title: 'Sucesso',
-      message: 'Desenvolvedor adicionado com sucesso!',
-      color: 'green',
+      title: "Sucesso",
+      message: "Desenvolvedor adicionado com sucesso!",
+      color: "green",
     });
-    
+
     form.reset();
     close();
   };
@@ -65,14 +104,14 @@ const Dashboard = () => {
       values.description,
       values.color
     );
-    
+
     addTeam(newTeam);
     notifications.show({
-      title: 'Sucesso',
-      message: 'Time criado com sucesso!',
-      color: 'green',
+      title: "Sucesso",
+      message: "Time criado com sucesso!",
+      color: "green",
     });
-    
+
     teamForm.reset();
     closeTeamModal();
   };
@@ -80,38 +119,38 @@ const Dashboard = () => {
   const handleArchiveDeveloper = (id, name) => {
     archiveDeveloper(id);
     notifications.show({
-      title: 'Desenvolvedor Arquivado',
+      title: "Desenvolvedor Arquivado",
       message: `${name} foi movido para a aba de arquivados.`,
-      color: 'blue',
+      color: "blue",
     });
   };
 
   const handleRestoreDeveloper = (id, name) => {
     restoreDeveloper(id);
     notifications.show({
-      title: 'Desenvolvedor Restaurado',
+      title: "Desenvolvedor Restaurado",
       message: `${name} foi restaurado para a equipe ativa.`,
-      color: 'green',
+      color: "green",
     });
   };
 
   const getPerformanceColor = (score) => {
-    if (score >= 8) return 'green';
-    if (score >= 6) return 'yellow';
-    if (score >= 4) return 'orange';
-    return 'red';
+    if (score >= 8) return "green";
+    if (score >= 6) return "yellow";
+    if (score >= 4) return "orange";
+    return "red";
   };
 
   const getPerformanceLabel = (score) => {
-    if (score >= 8) return 'Excelente';
-    if (score >= 6) return 'Bom';
-    if (score >= 4) return 'Regular';
-    return 'Precisa Melhorar';
+    if (score >= 8) return "Excelente";
+    if (score >= 6) return "Bom";
+    if (score >= 4) return "Regular";
+    return "Precisa Melhorar";
   };
 
   const DeveloperCard = ({ developer, isArchived = false }) => {
-    const developerTeam = teams.find(team => team.id === developer.teamId);
-    
+    const developerTeam = teams.find((team) => team.id === developer.teamId);
+
     return (
       <Grid.Col key={developer.id} span={{ base: 12, sm: 6, md: 4 }}>
         <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
@@ -138,7 +177,9 @@ const Dashboard = () => {
                   {isArchived ? (
                     <Menu.Item
                       leftSection={<IconRestore size={14} />}
-                      onClick={() => handleRestoreDeveloper(developer.id, developer.name)}
+                      onClick={() =>
+                        handleRestoreDeveloper(developer.id, developer.name)
+                      }
                     >
                       Restaurar
                     </Menu.Item>
@@ -146,7 +187,9 @@ const Dashboard = () => {
                     <Menu.Item
                       leftSection={<IconArchive size={14} />}
                       color="orange"
-                      onClick={() => handleArchiveDeveloper(developer.id, developer.name)}
+                      onClick={() =>
+                        handleArchiveDeveloper(developer.id, developer.name)
+                      }
                     >
                       Arquivar
                     </Menu.Item>
@@ -159,20 +202,27 @@ const Dashboard = () => {
           <Text fw={500} size="lg" mb="xs">
             {developer.name}
           </Text>
-          
+
           <Text size="sm" c="dimmed" mb="xs">
             {developer.role}
           </Text>
 
           {developerTeam && (
-            <Badge color={developerTeam.color} variant="light" size="sm" mb="md">
+            <Badge
+              color={developerTeam.color}
+              variant="light"
+              size="sm"
+              mb="md"
+            >
               {developerTeam.name}
             </Badge>
           )}
 
           {!isArchived && (
             <Group justify="space-between" mb="md">
-              <Text size="sm" fw={500}>Performance Atual:</Text>
+              <Text size="sm" fw={500}>
+                Performance Atual:
+              </Text>
               <Group gap="xs">
                 <IconTrendingUp size={16} color="var(--mantine-color-blue-6)" />
                 <Text size="sm" fw={700} c="blue">
@@ -184,7 +234,8 @@ const Dashboard = () => {
 
           {isArchived && (
             <Text size="xs" c="dimmed" mb="md">
-              Arquivado em: {new Date(developer.archivedAt).toLocaleDateString('pt-BR')}
+              Arquivado em:{" "}
+              {new Date(developer.archivedAt).toLocaleDateString("pt-BR")}
             </Text>
           )}
 
@@ -199,7 +250,9 @@ const Dashboard = () => {
               </Button>
               <Button
                 size="sm"
-                onClick={() => navigate(`/developer/${developer.id}/create-report`)}
+                onClick={() =>
+                  navigate(`/developer/${developer.id}/create-report`)
+                }
               >
                 Nova Avaliação
               </Button>
@@ -214,14 +267,18 @@ const Dashboard = () => {
     <Container size="xl">
       <Group justify="space-between" mb="xl">
         <div>
-          <Title order={1} mb="xs">Dashboard da Equipe</Title>
-          <Text c="dimmed">Gerencie a performance da sua equipe de desenvolvedores</Text>
+          <Title order={1} mb="xs">
+            Dashboard da Equipe
+          </Title>
+          <Text c="dimmed">
+            Gerencie a performance da sua equipe de desenvolvedores
+          </Text>
         </div>
         <Group>
           <Button
             leftSection={<IconFileReport size={16} />}
             variant="outline"
-            onClick={() => navigate('/consolidated-report')}
+            onClick={() => navigate("/consolidated-report")}
           >
             Relatório Consolidado
           </Button>
@@ -232,10 +289,7 @@ const Dashboard = () => {
           >
             Criar Time
           </Button>
-          <Button
-            leftSection={<IconPlus size={16} />}
-            onClick={open}
-          >
+          <Button leftSection={<IconPlus size={16} />} onClick={open}>
             Adicionar Membro
           </Button>
         </Group>
@@ -260,11 +314,14 @@ const Dashboard = () => {
 
           {developers.length === 0 && (
             <Card shadow="sm" padding="xl" radius="md" withBorder mt="xl">
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <IconUser size={48} color="var(--mantine-color-gray-5)" />
-                <Title order={3} mt="md" mb="xs">Nenhum desenvolvedor ativo</Title>
+                <Title order={3} mt="md" mb="xs">
+                  Nenhum desenvolvedor ativo
+                </Title>
                 <Text c="dimmed" mb="lg">
-                  Comece adicionando membros à sua equipe para acompanhar a performance
+                  Comece adicionando membros à sua equipe para acompanhar a
+                  performance
                 </Text>
                 <Button leftSection={<IconPlus size={16} />} onClick={open}>
                   Adicionar Primeiro Membro
@@ -277,15 +334,21 @@ const Dashboard = () => {
         <Tabs.Panel value="archived">
           <Grid>
             {archivedDevelopers.map((developer) => (
-              <DeveloperCard key={developer.id} developer={developer} isArchived={true} />
+              <DeveloperCard
+                key={developer.id}
+                developer={developer}
+                isArchived={true}
+              />
             ))}
           </Grid>
 
           {archivedDevelopers.length === 0 && (
             <Card shadow="sm" padding="xl" radius="md" withBorder mt="xl">
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <IconArchive size={48} color="var(--mantine-color-gray-5)" />
-                <Title order={3} mt="md" mb="xs">Nenhum desenvolvedor arquivado</Title>
+                <Title order={3} mt="md" mb="xs">
+                  Nenhum desenvolvedor arquivado
+                </Title>
                 <Text c="dimmed">
                   Desenvolvedores arquivados aparecerão aqui
                 </Text>
@@ -295,30 +358,35 @@ const Dashboard = () => {
         </Tabs.Panel>
       </Tabs>
 
-      <Modal opened={opened} onClose={close} title="Adicionar Novo Membro" centered>
+      <Modal
+        opened={opened}
+        onClose={close}
+        title="Adicionar Novo Membro"
+        centered
+      >
         <form onSubmit={form.onSubmit(handleAddDeveloper)}>
           <TextInput
             label="Nome Completo"
             placeholder="Digite o nome do desenvolvedor"
-            {...form.getInputProps('name')}
+            {...form.getInputProps("name")}
             mb="md"
           />
-          
+
           <Select
             label="Cargo"
             placeholder="Selecione o cargo"
             data={[
-              'Frontend Developer',
-              'Backend Developer',
-              'Full Stack Developer',
-              'Mobile Developer',
-              'DevOps Engineer',
-              'QA Engineer',
-              'Tech Lead',
-              'Senior Developer',
-              'Junior Developer',
+              "Frontend Developer",
+              "Backend Developer",
+              "Full Stack Developer",
+              "Mobile Developer",
+              "DevOps Engineer",
+              "QA Engineer",
+              "Tech Lead",
+              "Senior Developer",
+              "Junior Developer",
             ]}
-            {...form.getInputProps('role')}
+            {...form.getInputProps("role")}
             mb="md"
             searchable
             clearable
@@ -327,8 +395,8 @@ const Dashboard = () => {
           <Select
             label="Time (Opcional)"
             placeholder="Selecione um time"
-            data={teams.map(team => ({ value: team.id, label: team.name }))}
-            {...form.getInputProps('teamId')}
+            data={teams.map((team) => ({ value: team.id, label: team.name }))}
+            {...form.getInputProps("teamId")}
             mb="xl"
             clearable
           />
@@ -337,44 +405,60 @@ const Dashboard = () => {
             <Button variant="outline" onClick={close}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Adicionar
-            </Button>
+            <Button type="submit">Adicionar</Button>
           </Group>
         </form>
       </Modal>
 
-      <Modal opened={teamModalOpened} onClose={closeTeamModal} title="Criar Novo Time" centered>
+      <Modal
+        opened={teamModalOpened}
+        onClose={closeTeamModal}
+        title="Criar Novo Time"
+        centered
+      >
         <form onSubmit={teamForm.onSubmit(handleAddTeam)}>
           <TextInput
             label="Nome do Time"
             placeholder="Digite o nome do time"
-            {...teamForm.getInputProps('name')}
+            {...teamForm.getInputProps("name")}
             mb="md"
           />
-          
+
           <TextInput
             label="Descrição (Opcional)"
             placeholder="Descreva o propósito do time"
-            {...teamForm.getInputProps('description')}
+            {...teamForm.getInputProps("description")}
             mb="md"
           />
 
           <ColorInput
             label="Cor do Time"
             placeholder="Escolha uma cor"
-            {...teamForm.getInputProps('color')}
+            {...teamForm.getInputProps("color")}
             mb="xl"
-            swatches={['#2e2e2e', '#868e96', '#fa5252', '#e64980', '#be4bdb', '#7950f2', '#4c6ef5', '#228be6', '#15aabf', '#12b886', '#40c057', '#82c91e', '#fab005', '#fd7e14']}
+            swatches={[
+              "#2e2e2e",
+              "#868e96",
+              "#fa5252",
+              "#e64980",
+              "#be4bdb",
+              "#7950f2",
+              "#4c6ef5",
+              "#228be6",
+              "#15aabf",
+              "#12b886",
+              "#40c057",
+              "#82c91e",
+              "#fab005",
+              "#fd7e14",
+            ]}
           />
 
           <Group justify="flex-end">
             <Button variant="outline" onClick={closeTeamModal}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Criar Time
-            </Button>
+            <Button type="submit">Criar Time</Button>
           </Group>
         </form>
       </Modal>
@@ -383,4 +467,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

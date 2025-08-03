@@ -1,22 +1,20 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { createDeveloper, createPerformanceReport, createTeam } from '../types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { createDeveloper } from "../types";
 
 const useAppStore = create(
   persist(
     (set, get) => ({
-      // State
       developers: [
-        createDeveloper('1', 'João Silva', 'Frontend Developer', 8.5),
-        createDeveloper('2', 'Maria Santos', 'Backend Developer', 9.2),
-        createDeveloper('3', 'Pedro Costa', 'Full Stack Developer', 7.8),
+        createDeveloper("1", "João Silva", "Frontend Developer", 8.5),
+        createDeveloper("2", "Maria Santos", "Backend Developer", 9.2),
+        createDeveloper("3", "Pedro Costa", "Full Stack Developer", 7.8),
       ],
-      archivedDevelopers: [], // New state for archived developers
-      teams: [], // New state for teams
+      archivedDevelopers: [],
+      teams: [],
       performanceReports: [],
-      darkMode: false,
+      darkMode: true,
 
-      // Actions
       addDeveloper: (developer) =>
         set((state) => ({
           developers: [...state.developers, developer],
@@ -31,25 +29,34 @@ const useAppStore = create(
 
       archiveDeveloper: (id) =>
         set((state) => {
-          const developerToArchive = state.developers.find((dev) => dev.id === id);
+          const developerToArchive = state.developers.find(
+            (dev) => dev.id === id
+          );
           if (!developerToArchive) return state;
 
           return {
             developers: state.developers.filter((dev) => dev.id !== id),
-            archivedDevelopers: [...state.archivedDevelopers, { ...developerToArchive, archivedAt: new Date().toISOString() }],
+            archivedDevelopers: [
+              ...state.archivedDevelopers,
+              { ...developerToArchive, archivedAt: new Date().toISOString() },
+            ],
           };
         }),
 
       restoreDeveloper: (id) =>
         set((state) => {
-          const developerToRestore = state.archivedDevelopers.find((dev) => dev.id === id);
+          const developerToRestore = state.archivedDevelopers.find(
+            (dev) => dev.id === id
+          );
           if (!developerToRestore) return state;
 
-          const { archivedAt, ...restoredDeveloper } = developerToRestore; // Remove archivedAt
+          const { ...restoredDeveloper } = developerToRestore;
 
           return {
             developers: [...state.developers, restoredDeveloper],
-            archivedDevelopers: state.archivedDevelopers.filter((dev) => dev.id !== id),
+            archivedDevelopers: state.archivedDevelopers.filter(
+              (dev) => dev.id !== id
+            ),
           };
         }),
 
@@ -83,7 +90,7 @@ const useAppStore = create(
       addPerformanceReport: (report) =>
         set((state) => {
           const newReports = [...state.performanceReports, report];
-          
+
           // Update developer's latest performance score
           const updatedDevelopers = state.developers.map((dev) =>
             dev.id === report.developerId
@@ -120,7 +127,7 @@ const useAppStore = create(
         })),
     }),
     {
-      name: 'tivix-performance-tracker-storage',
+      name: "tivix-performance-tracker-storage",
       partialize: (state) => ({
         developers: state.developers,
         archivedDevelopers: state.archivedDevelopers, // Include archived developers in persistence
@@ -133,5 +140,3 @@ const useAppStore = create(
 );
 
 export default useAppStore;
-
-

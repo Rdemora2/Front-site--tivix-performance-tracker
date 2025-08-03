@@ -1,18 +1,39 @@
-import { Container, Title, Text, Group, Button, Card, SimpleGrid, Paper, Badge, Stack } from '@mantine/core';
-import { IconArrowRight, IconUsers, IconChartLine, IconFileAnalytics, IconUserPlus } from '@tabler/icons-react';
-import { useNavigate } from 'react-router-dom';
-import useAppStore from '../store/useAppStore';
+import {
+  Container,
+  Title,
+  Text,
+  Group,
+  Button,
+  Card,
+  SimpleGrid,
+  Paper,
+  Badge,
+  Stack,
+} from "@mantine/core";
+import {
+  IconArrowRight,
+  IconUsers,
+  IconChartLine,
+  IconFileAnalytics,
+  IconUserPlus,
+} from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
+import useAppStore from "../store/useAppStore";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
   const { developers, performanceReports } = useAppStore();
 
-  // Calculate overall team average score
-  const totalScores = performanceReports.reduce((sum, report) => sum + report.weightedAverageScore, 0);
-  const overallAverageScore = performanceReports.length > 0 ? (totalScores / performanceReports.length) : 0;
+  const totalScores = performanceReports.reduce(
+    (sum, report) => sum + report.weightedAverageScore,
+    0
+  );
+  const overallAverageScore =
+    performanceReports.length > 0 ? totalScores / performanceReports.length : 0;
 
-  // Get top 3 and bottom 3 performers
-  const sortedDevelopers = [...developers].sort((a, b) => b.latestPerformanceScore - a.latestPerformanceScore);
+  const sortedDevelopers = [...developers].sort(
+    (a, b) => b.latestPerformanceScore - a.latestPerformanceScore
+  );
   const topPerformers = sortedDevelopers.slice(0, 3);
   const bottomPerformers = sortedDevelopers.slice(-3).reverse();
 
@@ -20,8 +41,13 @@ const DashboardHome = () => {
     <Container size="xl">
       <Group justify="space-between" mb="xl">
         <div>
-          <Title order={1} mb="xs">Visão Geral da Equipe</Title>
-          <Text c="dimmed">Métricas consolidadas e insights rápidos sobre a performance do time.</Text>
+          <Title order={1} mb="xs">
+            Visão Geral da Equipe
+          </Title>
+          <Text c="dimmed">
+            Métricas consolidadas e insights rápidos sobre a performance do
+            time.
+          </Text>
         </div>
         <Button
           leftSection={<IconUserPlus size={16} />}
@@ -34,36 +60,52 @@ const DashboardHome = () => {
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg" mb="xl">
         <Card shadow="sm" padding="lg" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
-            <Text size="xs" c="dimmed" fw={700}>TOTAL DE MEMBROS</Text>
+            <Text size="xs" c="dimmed" fw={700}>
+              TOTAL DE MEMBROS
+            </Text>
             <IconUsers size={20} color="var(--mantine-color-blue-6)" />
           </Group>
-          <Text size="xl" fw={700}>{developers.length}</Text>
+          <Text size="xl" fw={700}>
+            {developers.length}
+          </Text>
         </Card>
 
         <Card shadow="sm" padding="lg" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
-            <Text size="xs" c="dimmed" fw={700}>MÉDIA GERAL DA EQUIPE</Text>
+            <Text size="xs" c="dimmed" fw={700}>
+              MÉDIA GERAL DA EQUIPE
+            </Text>
             <IconChartLine size={20} color="var(--mantine-color-green-6)" />
           </Group>
-          <Text size="xl" fw={700}>{overallAverageScore.toFixed(1)}/10</Text>
+          <Text size="xl" fw={700}>
+            {overallAverageScore.toFixed(1)}/10
+          </Text>
         </Card>
 
         <Card shadow="sm" padding="lg" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
-            <Text size="xs" c="dimmed" fw={700}>AVALIAÇÕES REGISTRADAS</Text>
+            <Text size="xs" c="dimmed" fw={700}>
+              AVALIAÇÕES REGISTRADAS
+            </Text>
             <IconFileAnalytics size={20} color="var(--mantine-color-grape-6)" />
           </Group>
-          <Text size="xl" fw={700}>{performanceReports.length}</Text>
+          <Text size="xl" fw={700}>
+            {performanceReports.length}
+          </Text>
         </Card>
 
         <Card shadow="sm" padding="lg" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
-            <Text size="xs" c="dimmed" fw={700}>ÚLTIMA ATUALIZAÇÃO</Text>
+            <Text size="xs" c="dimmed" fw={700}>
+              ÚLTIMA ATUALIZAÇÃO
+            </Text>
             <IconFileAnalytics size={20} color="var(--mantine-color-gray-6)" />
           </Group>
           <Text size="xl" fw={700}>
-            {performanceReports.length > 0 
-              ? new Date(performanceReports[0].createdAt).toLocaleDateString("pt-BR") 
+            {performanceReports.length > 0
+              ? new Date(performanceReports[0].createdAt).toLocaleDateString(
+                  "pt-BR"
+                )
               : "N/A"}
           </Text>
         </Card>
@@ -71,14 +113,18 @@ const DashboardHome = () => {
 
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg" mb="xl">
         <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Title order={3} mb="md">Melhores Performances</Title>
+          <Title order={3} mb="md">
+            Melhores Performances
+          </Title>
           <Stack>
             {topPerformers.length > 0 ? (
-              topPerformers.map(dev => (
+              topPerformers.map((dev) => (
                 <Paper key={dev.id} p="xs" withBorder>
                   <Group justify="space-between">
                     <Text>{dev.name}</Text>
-                    <Badge color="green">{dev.latestPerformanceScore.toFixed(1)}/10</Badge>
+                    <Badge color="green">
+                      {dev.latestPerformanceScore.toFixed(1)}/10
+                    </Badge>
                   </Group>
                 </Paper>
               ))
@@ -89,14 +135,18 @@ const DashboardHome = () => {
         </Card>
 
         <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Title order={3} mb="md">A Desenvolver</Title>
+          <Title order={3} mb="md">
+            A Desenvolver
+          </Title>
           <Stack>
             {bottomPerformers.length > 0 ? (
-              bottomPerformers.map(dev => (
+              bottomPerformers.map((dev) => (
                 <Paper key={dev.id} p="xs" withBorder>
                   <Group justify="space-between">
                     <Text>{dev.name}</Text>
-                    <Badge color="orange">{dev.latestPerformanceScore.toFixed(1)}/10</Badge>
+                    <Badge color="orange">
+                      {dev.latestPerformanceScore.toFixed(1)}/10
+                    </Badge>
                   </Group>
                 </Paper>
               ))
@@ -121,5 +171,3 @@ const DashboardHome = () => {
 };
 
 export default DashboardHome;
-
-
