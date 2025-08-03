@@ -1,10 +1,10 @@
-# Tivix Performance Tracker
+# Performance Tracker
 
 Uma aplicação web moderna para avaliação e acompanhamento da performance de equipes de desenvolvimento.
 
 ## 🚀 Visão Geral
 
-O **Tivix Performance Tracker** é uma ferramenta completa que permite aos gestores avaliar a performance mensal de suas equipes de desenvolvedores de forma estruturada, intuitiva e visualmente atraente.
+O **Performance Tracker** é uma ferramenta completa que permite aos gestores avaliar a performance mensal de suas equipes de desenvolvedores de forma estruturada, intuitiva e visualmente atraente.
 
 ## ✨ Funcionalidades Principais
 

@@ -1,5 +1,21 @@
-import { AppShell, Title, Group, ActionIcon, Text, Menu, Avatar, Badge } from "@mantine/core";
-import { IconSun, IconMoon, IconLogout, IconUser, IconChevronDown, IconUsers } from "@tabler/icons-react";
+import {
+  AppShell,
+  Title,
+  Group,
+  ActionIcon,
+  Text,
+  Menu,
+  Avatar,
+  Badge,
+} from "@mantine/core";
+import {
+  IconSun,
+  IconMoon,
+  IconLogout,
+  IconUser,
+  IconChevronDown,
+  IconUsers,
+} from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import useAppStore from "../store/useAppStore";
 
@@ -9,24 +25,32 @@ const AppLayout = ({ children }) => {
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/login';
+    window.location.href = "/login";
   };
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'admin': return 'red';
-      case 'manager': return 'blue';
-      case 'user': return 'green';
-      default: return 'gray';
+      case "admin":
+        return "red";
+      case "manager":
+        return "blue";
+      case "user":
+        return "green";
+      default:
+        return "gray";
     }
   };
 
   const getRoleLabel = (role) => {
     switch (role) {
-      case 'admin': return 'Administrador';
-      case 'manager': return 'Gerente';
-      case 'user': return 'Usuário';
-      default: return role;
+      case "admin":
+        return "Administrador";
+      case "manager":
+        return "Gerente";
+      case "user":
+        return "Usuário";
+      default:
+        return role;
     }
   };
 
@@ -34,15 +58,15 @@ const AppLayout = ({ children }) => {
     <AppShell header={{ height: 70 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Title 
-            order={2} 
-            c="blue" 
-            style={{ cursor: 'pointer' }}
-            onClick={() => navigate('/')}
+          <Title
+            order={2}
+            c="blue"
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate("/")}
           >
-            Tivix Performance Tracker
+            Performance Tracker
           </Title>
-          
+
           <Group gap="md">
             <ActionIcon
               variant="outline"
@@ -56,7 +80,7 @@ const AppLayout = ({ children }) => {
             {user && (
               <Menu shadow="md" width={200}>
                 <Menu.Target>
-                  <Group gap="xs" style={{ cursor: 'pointer' }}>
+                  <Group gap="xs" style={{ cursor: "pointer" }}>
                     <Avatar size="sm" color="blue">
                       <IconUser size={16} />
                     </Avatar>
@@ -73,15 +97,15 @@ const AppLayout = ({ children }) => {
                 </Menu.Target>
 
                 <Menu.Dropdown>
-                  {user.role === 'admin' && (
-                    <Menu.Item 
+                  {user.role === "admin" && (
+                    <Menu.Item
                       leftSection={<IconUsers size={14} />}
-                      onClick={() => navigate('/user-management')}
+                      onClick={() => navigate("/user-management")}
                     >
                       Gerenciar Usuários
                     </Menu.Item>
                   )}
-                  <Menu.Item 
+                  <Menu.Item
                     leftSection={<IconLogout size={14} />}
                     onClick={handleLogout}
                     color="red"

@@ -1,50 +1,50 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { 
-  Card, 
-  Container, 
-  Title, 
-  TextInput, 
-  PasswordInput, 
-  Button, 
-  Text, 
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Card,
+  Container,
+  Title,
+  TextInput,
+  PasswordInput,
+  Button,
+  Text,
   Alert,
   Stack,
-  Anchor
-} from '@mantine/core';
-import { IconAlertCircle, IconLogin } from '@tabler/icons-react';
-import useAppStore from '../store/useAppStore';
+  Anchor,
+} from "@mantine/core";
+import { IconAlertCircle, IconLogin } from "@tabler/icons-react";
+import useAppStore from "../store/useAppStore";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const navigate = useNavigate();
-  const login = useAppStore(state => state.login);
+  const login = useAppStore((state) => state.login);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await login(credentials);
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
-      setError(error.message || 'Erro ao fazer login');
+      setError(error.message || "Erro ao fazer login");
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (field) => (e) => {
-    setCredentials(prev => ({
+    setCredentials((prev) => ({
       ...prev,
-      [field]: e.target.value
+      [field]: e.target.value,
     }));
   };
 
@@ -52,9 +52,9 @@ const Login = () => {
     <Container size="xs" pt={100}>
       <Card shadow="md" padding="xl" radius="md" withBorder>
         <Stack spacing="md">
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: "center" }}>
             <Title order={2} mb="xs">
-              Tivix Performance Tracker
+              Performance Tracker
             </Title>
             <Text c="dimmed" size="sm">
               Faça login para acessar o sistema
@@ -77,7 +77,7 @@ const Login = () => {
                 label="Email"
                 placeholder="seu.email@tivix.com"
                 value={credentials.email}
-                onChange={handleChange('email')}
+                onChange={handleChange("email")}
                 required
                 type="email"
               />
@@ -86,7 +86,7 @@ const Login = () => {
                 label="Senha"
                 placeholder="Sua senha"
                 value={credentials.password}
-                onChange={handleChange('password')}
+                onChange={handleChange("password")}
                 required
               />
 
