@@ -1,15 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createDeveloper } from "../types";
 
 const useAppStore = create(
   persist(
     (set, get) => ({
-      developers: [
-        createDeveloper("1", "João Silva", "Frontend Developer", 8.5),
-        createDeveloper("2", "Maria Santos", "Backend Developer", 9.2),
-        createDeveloper("3", "Pedro Costa", "Full Stack Developer", 7.8),
-      ],
+      developers: [],
       archivedDevelopers: [],
       teams: [],
       performanceReports: [],
