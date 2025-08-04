@@ -9,12 +9,16 @@ import {
   Grid,
   Paper,
   Stack,
+  Modal,
+  Table,
+  Progress,
 } from "@mantine/core";
 import {
   IconArrowLeft,
   IconPlus,
   IconTrendingUp,
   IconCalendar,
+  IconEye,
 } from "@tabler/icons-react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -40,6 +44,8 @@ const DeveloperProfile = () => {
   const navigate = useNavigate();
   const { developers, getReportsByDeveloper } = useAppStore();
   const [selectedReportId, setSelectedReportId] = useState(null);
+  const [detailsModalOpened, setDetailsModalOpened] = useState(false);
+  const [reportForDetails, setReportForDetails] = useState(null);
 
   const developer = developers.find((dev) => dev.id === id);
   const reports = getReportsByDeveloper(id);
@@ -86,6 +92,18 @@ const DeveloperProfile = () => {
     if (score >= 6) return "Bom";
     if (score >= 4) return "Regular";
     return "Precisa Melhorar";
+  };
+
+  const handleViewDetails = (report) => {
+    setReportForDetails(report);
+    setDetailsModalOpened(true);
+  };
+
+  const getScoreColor = (score) => {
+    if (score >= 8) return "green";
+    if (score >= 6) return "blue";
+    if (score >= 4) return "yellow";
+    return "red";
   };
 
   return (
@@ -191,16 +209,17 @@ const DeveloperProfile = () => {
                     p="md"
                     withBorder
                     style={{
-                      cursor: "pointer",
                       backgroundColor:
                         selectedReport?.id === report.id
                           ? "var(--mantine-color-blue-light)"
                           : undefined,
                     }}
-                    onClick={() => setSelectedReportId(report.id)}
                   >
                     <Group justify="space-between">
-                      <div>
+                      <div
+                        style={{ flex: 1, cursor: "pointer" }}
+                        onClick={() => setSelectedReportId(report.id)}
+                      >
                         <Group gap="xs" mb="xs">
                           <IconCalendar size={16} />
                           <Text fw={500}>
@@ -215,12 +234,25 @@ const DeveloperProfile = () => {
                           /10
                         </Text>
                       </div>
-                      <Badge
-                        color={getPerformanceColor(report.weightedAverageScore)}
-                        variant="light"
-                      >
-                        {getPerformanceLabel(report.weightedAverageScore)}
-                      </Badge>
+                      <Stack gap="xs" align="flex-end">
+                        <Badge
+                          color={getPerformanceColor(report.weightedAverageScore)}
+                          variant="light"
+                        >
+                          {getPerformanceLabel(report.weightedAverageScore)}
+                        </Badge>
+                        <Button
+                          size="xs"
+                          variant="subtle"
+                          leftSection={<IconEye size={14} />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(report);
+                          }}
+                        >
+                          Ver Notas
+                        </Button>
+                      </Stack>
                     </Group>
                   </Paper>
                 ))}
@@ -284,6 +316,130 @@ const DeveloperProfile = () => {
           </Grid.Col>
         )}
       </Grid>
+
+      {/* Modal de Detalhes das Notas */}
+      <Modal
+        opened={detailsModalOpened}
+        onClose={() => setDetailsModalOpened(false)}
+        title={
+          reportForDetails && (
+            <Group gap="xs">
+              <Text fw={600}>Notas Detalhadas -</Text>
+              <Text>
+                {new Date(reportForDetails.month + "-01").toLocaleDateString(
+                  "pt-BR",
+                  { month: "long", year: "numeric" }
+                )}
+              </Text>
+            </Group>
+          )
+        }
+        size="lg"
+        centered
+      >
+        {reportForDetails && (
+          <Stack gap="lg">
+            {/* Resumo Geral */}
+            <Card withBorder p="md">
+              <Group justify="space-between" mb="md">
+                <Text fw={600} size="lg">
+                  Performance Geral
+                </Text>
+                <Badge
+                  size="lg"
+                  color={getPerformanceColor(reportForDetails.weightedAverageScore)}
+                >
+                  {reportForDetails.weightedAverageScore.toFixed(1)}/10
+                </Badge>
+              </Group>
+              <Progress
+                value={(reportForDetails.weightedAverageScore / 10) * 100}
+                color={getScoreColor(reportForDetails.weightedAverageScore)}
+                size="lg"
+                radius="md"
+              />
+            </Card>
+
+            {/* Notas por Categoria */}
+            <Stack gap="md">
+              <Text fw={600} size="md">
+                Notas por Categoria
+              </Text>
+              
+              {Object.entries(EVALUATION_CATEGORIES).map(([categoryKey, category]) => {
+                const categoryScore = reportForDetails.categoryScores?.[categoryKey] || 0;
+                
+                return (
+                  <Card key={categoryKey} withBorder p="md">
+                    <Group justify="space-between" mb="sm">
+                      <Text fw={500}>{category.label}</Text>
+                      <Badge color={getScoreColor(categoryScore)}>
+                        {categoryScore.toFixed(1)}/10
+                      </Badge>
+                    </Group>
+                    
+                    <Progress
+                      value={(categoryScore / 10) * 100}
+                      color={getScoreColor(categoryScore)}
+                      mb="md"
+                    />
+
+                    {/* Perguntas da Categoria */}
+                    <Stack gap="xs">
+                      {category.questions.map((question) => {
+                        const questionScore = reportForDetails.questionScores?.[question.key] || 0;
+                        
+                        return (
+                          <Group key={question.key} justify="space-between">
+                            <Text size="sm" c="dimmed" style={{ flex: 1 }}>
+                              {question.label}
+                            </Text>
+                            <Group gap="xs">
+                              <Text size="sm" fw={500}>
+                                {questionScore.toFixed(1)}/10
+                              </Text>
+                              <Text size="xs" c="dimmed">
+                                (Peso: {question.weight})
+                              </Text>
+                            </Group>
+                          </Group>
+                        );
+                      })}
+                    </Stack>
+                  </Card>
+                );
+              })}
+            </Stack>
+
+            {/* Observações */}
+            {(reportForDetails.highlights || reportForDetails.pointsToDevelop) && (
+              <Stack gap="md">
+                <Text fw={600} size="md">
+                  Observações
+                </Text>
+                
+                {reportForDetails.highlights && (
+                  <Card withBorder p="md">
+                    <Text fw={500} size="sm" mb="xs" c="green">
+                      🌟 Destaques do Mês
+                    </Text>
+                    <Text size="sm">{reportForDetails.highlights}</Text>
+                  </Card>
+                )}
+                
+                {reportForDetails.pointsToDevelop && (
+                  <Card withBorder p="md">
+                    <Text fw={500} size="sm" mb="xs" c="orange">
+                      📈 Pontos a Desenvolver
+                    </Text>
+                    <Text size="sm">{reportForDetails.pointsToDevelop}</Text>
+                  </Card>
+                )}
+              </Stack>
+            )}
+          </Stack>
+        )}
+      </Modal>
     </Container>
   );
 };

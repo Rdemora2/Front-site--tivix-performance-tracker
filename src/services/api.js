@@ -38,6 +38,9 @@ export const hasPermission = (action, resource) => {
   const { role } = payload;
   if (role === "admin") return true;
 
+  // Exclusão é permitida apenas para administradores
+  if (action === "delete") return false;
+
   if (
     role === "manager" &&
     ["teams", "developers", "reports"].includes(resource)
@@ -189,6 +192,11 @@ export const developersAPI = {
     apiRequest(`/developers/${id}/archive`, {
       method: "PUT",
       body: JSON.stringify({ archive }),
+    }),
+
+  delete: (id) =>
+    apiRequest(`/developers/${id}`, {
+      method: "DELETE",
     }),
 
   getReports: (developerId) => apiRequest(`/developers/${developerId}/reports`),

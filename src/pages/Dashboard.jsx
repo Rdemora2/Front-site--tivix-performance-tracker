@@ -25,6 +25,7 @@ import {
   IconRestore,
   IconFileReport,
   IconTrendingUp,
+  IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,10 @@ const Dashboard = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [teamModalOpened, { open: openTeamModal, close: closeTeamModal }] =
     useDisclosure(false);
+  const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] =
+    useDisclosure(false);
+  const [developerToDelete, setDeveloperToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
   const {
     developers,
@@ -47,6 +52,8 @@ const Dashboard = () => {
     addTeam,
     archiveDeveloper,
     restoreDeveloper,
+    deleteDeveloper,
+    hasPermission,
   } = useAppStore();
 
   const form = useForm({
@@ -163,6 +170,35 @@ const Dashboard = () => {
     }
   };
 
+  const handleConfirmDelete = (developer) => {
+    setDeveloperToDelete(developer);
+    openDeleteModal();
+  };
+
+  const handleDeleteDeveloper = async () => {
+    if (!developerToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteDeveloper(developerToDelete.id);
+      notifications.show({
+        title: "Desenvolvedor Excluído",
+        message: `${developerToDelete.name} foi excluído permanentemente do sistema.`,
+        color: "red",
+      });
+      closeDeleteModal();
+      setDeveloperToDelete(null);
+    } catch (error) {
+      notifications.show({
+        title: "Erro",
+        message: error.message || "Erro ao excluir desenvolvedor. Tente novamente.",
+        color: "red",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const getPerformanceColor = (score) => {
     if (score >= 8) return "green";
     if (score >= 6) return "yellow";
@@ -204,24 +240,46 @@ const Dashboard = () => {
                 </Menu.Target>
                 <Menu.Dropdown>
                   {isArchived ? (
-                    <Menu.Item
-                      leftSection={<IconRestore size={14} />}
-                      onClick={() =>
-                        handleRestoreDeveloper(developer.id, developer.name)
-                      }
-                    >
-                      Restaurar
-                    </Menu.Item>
+                    <>
+                      <Menu.Item
+                        leftSection={<IconRestore size={14} />}
+                        onClick={() =>
+                          handleRestoreDeveloper(developer.id, developer.name)
+                        }
+                      >
+                        Restaurar
+                      </Menu.Item>
+                      {hasPermission("delete", "developers") && (
+                        <Menu.Item
+                          leftSection={<IconTrash size={14} />}
+                          color="red"
+                          onClick={() => handleConfirmDelete(developer)}
+                        >
+                          Excluir Permanentemente
+                        </Menu.Item>
+                      )}
+                    </>
                   ) : (
-                    <Menu.Item
-                      leftSection={<IconArchive size={14} />}
-                      color="orange"
-                      onClick={() =>
-                        handleArchiveDeveloper(developer.id, developer.name)
-                      }
-                    >
-                      Arquivar
-                    </Menu.Item>
+                    <>
+                      <Menu.Item
+                        leftSection={<IconArchive size={14} />}
+                        color="orange"
+                        onClick={() =>
+                          handleArchiveDeveloper(developer.id, developer.name)
+                        }
+                      >
+                        Arquivar
+                      </Menu.Item>
+                      {hasPermission("delete", "developers") && (
+                        <Menu.Item
+                          leftSection={<IconTrash size={14} />}
+                          color="red"
+                          onClick={() => handleConfirmDelete(developer)}
+                        >
+                          Excluir Permanentemente
+                        </Menu.Item>
+                      )}
+                    </>
                   )}
                 </Menu.Dropdown>
               </Menu>
@@ -490,6 +548,56 @@ const Dashboard = () => {
             <Button type="submit">Criar Time</Button>
           </Group>
         </form>
+      </Modal>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Modal
+        opened={deleteModalOpened}
+        onClose={closeDeleteModal}
+        title="Confirmar Exclusão Permanente"
+        centered
+        overlayProps={{
+          backgroundOpacity: 0.5,
+          blur: 2,
+        }}
+      >
+        <Text size="sm" mb="md">
+          Tem certeza que deseja <strong>EXCLUIR PERMANENTEMENTE</strong> o desenvolvedor{" "}
+          <strong>{developerToDelete?.name}</strong>?
+        </Text>
+        
+        <Text size="sm" c="red" mb="md">
+          ⚠️ <strong>ATENÇÃO:</strong> Esta ação não pode ser desfeita e removerá:
+        </Text>
+        
+        <ul style={{ marginBottom: "16px", fontSize: "14px", color: "var(--mantine-color-dimmed)" }}>
+          <li>Todos os dados do desenvolvedor</li>
+          <li>Todos os relatórios de performance históricos</li>
+          <li>Não será possível recuperar essas informações</li>
+        </ul>
+
+        <Text size="sm" c="dimmed" mb="xl">
+          Se você deseja apenas ocultar o desenvolvedor temporariamente, 
+          considere usar a opção "Arquivar" ao invés de excluir.
+        </Text>
+
+        <Group justify="flex-end">
+          <Button 
+            variant="outline" 
+            onClick={closeDeleteModal}
+            disabled={isDeleting}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            color="red" 
+            onClick={handleDeleteDeveloper}
+            loading={isDeleting}
+            leftSection={<IconTrash size={14} />}
+          >
+            {isDeleting ? "Excluindo..." : "Excluir Permanentemente"}
+          </Button>
+        </Group>
       </Modal>
     </Container>
   );

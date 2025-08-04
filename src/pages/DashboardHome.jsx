@@ -36,7 +36,7 @@ const DashboardHome = () => {
     (a, b) => b.latestPerformanceScore - a.latestPerformanceScore
   );
   const topPerformers = sortedDevelopers.slice(0, 3);
-  const bottomPerformers = sortedDevelopers.slice(-3).reverse();
+  const bottomPerformers = sortedDevelopers.slice(-3);
 
   return (
     <Container size="xl">
@@ -124,7 +124,13 @@ const DashboardHome = () => {
               topPerformers.map((dev) => (
                 <Paper key={dev.id} p="xs" withBorder>
                   <Group justify="space-between">
-                    <Text>{dev.name}</Text>
+                    <Text
+                      style={{ cursor: "pointer" }}
+                      c="blue"
+                      onClick={() => navigate(`/developer/${dev.id}`)}
+                    >
+                      {dev.name}
+                    </Text>
                     <Badge color="green">
                       {dev.latestPerformanceScore.toFixed(1)}/10
                     </Badge>
@@ -146,7 +152,13 @@ const DashboardHome = () => {
               bottomPerformers.map((dev) => (
                 <Paper key={dev.id} p="xs" withBorder>
                   <Group justify="space-between">
-                    <Text>{dev.name}</Text>
+                    <Text
+                      style={{ cursor: "pointer" }}
+                      c="blue"
+                      onClick={() => navigate(`/developer/${dev.id}`)}
+                    >
+                      {dev.name}
+                    </Text>
                     <Badge color="orange">
                       {dev.latestPerformanceScore.toFixed(1)}/10
                     </Badge>

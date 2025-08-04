@@ -302,6 +302,28 @@ const useAppStore = create(
         }
       },
 
+      deleteDeveloper: async (id) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.developers.delete(id);
+          const deletedDeveloper = response.data.deletedDeveloper;
+
+          set((state) => ({
+            developers: state.developers.filter((dev) => dev.id !== id),
+            archivedDevelopers: state.archivedDevelopers.filter(
+              (dev) => dev.id !== id
+            ),
+            loading: false,
+          }));
+
+          return deletedDeveloper;
+        } catch (error) {
+          console.error("Error deleting developer:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
       // Team actions
       addTeam: async (team) => {
         try {
