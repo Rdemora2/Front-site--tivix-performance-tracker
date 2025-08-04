@@ -8,7 +8,7 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend-performancetracker.rule=Host(`performancetracker.tivix.com.br`, `performance.valiantgroup.com.br`)"
+      - "traefik.http.routers.frontend-performancetracker.rule=(Host(`performancetracker.tivix.com.br`) || Host(`performance.valiantgroup.com.br`))"
       - "traefik.http.routers.frontend-performancetracker.entrypoints=websecure"
       - "traefik.http.routers.frontend-performancetracker.tls.certresolver=myresolver"
       - "traefik.http.services.frontend-performancetracker.loadbalancer.server.port=80"
