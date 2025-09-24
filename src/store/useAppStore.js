@@ -12,7 +12,8 @@ const useAppStore = create(
       archivedDevelopers: [],
       teams: [],
       performanceReports: [],
-      users: [], // Lista de usuários (apenas para admin)
+      users: [],
+      companies: [],
       darkMode: true,
       loading: false,
       error: null,
@@ -59,7 +60,6 @@ const useAppStore = create(
         }
       },
 
-      // Admin cria usuário com senha temporária
       createUser: async (userData) => {
         try {
           set({ loading: true, error: null });
@@ -73,12 +73,11 @@ const useAppStore = create(
         }
       },
 
-      // Definir nova senha (primeiro acesso)
       setNewPassword: async (passwordData) => {
         try {
           set({ loading: true, error: null });
           const response = await api.auth.setNewPassword(passwordData);
-          
+
           if (response.data?.token) {
             tokenUtils.set(response.data.token);
             set({
@@ -95,7 +94,6 @@ const useAppStore = create(
         }
       },
 
-      // Alterar senha
       changePassword: async (passwordData) => {
         try {
           set({ loading: true, error: null });
@@ -109,7 +107,6 @@ const useAppStore = create(
         }
       },
 
-      // Buscar lista de usuários (Admin apenas)
       fetchUsers: async () => {
         try {
           set({ loading: true, error: null });
@@ -118,6 +115,103 @@ const useAppStore = create(
           return response.data;
         } catch (error) {
           console.error("Error fetching users:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      updateUser: async (id, userData) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.updateUser(id, userData);
+
+          const users = get().users.map((user) =>
+            user.id === id ? response.data : user
+          );
+
+          set({ users, loading: false });
+          return response.data;
+        } catch (error) {
+          console.error("Update user error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      deleteUser: async (id) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.auth.deleteUser(id);
+
+          const users = get().users.filter((user) => user.id !== id);
+
+          set({ users, loading: false });
+          return response.data;
+        } catch (error) {
+          console.error("Delete user error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      fetchCompanies: async () => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.companies.getAll();
+          set({ companies: response.data || [], loading: false });
+          return response.data;
+        } catch (error) {
+          console.error("Error fetching companies:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      createCompany: async (companyData) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.companies.create(companyData);
+
+          const companies = [...get().companies, response.data];
+          set({ companies, loading: false });
+
+          return response.data;
+        } catch (error) {
+          console.error("Create company error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      updateCompany: async (id, companyData) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await api.companies.update(id, companyData);
+
+          const companies = get().companies.map((company) =>
+            company.id === id ? response.data : company
+          );
+
+          set({ companies, loading: false });
+          return response.data;
+        } catch (error) {
+          console.error("Update company error:", error);
+          set({ error: error.message, loading: false });
+          throw error;
+        }
+      },
+
+      deleteCompany: async (id) => {
+        try {
+          set({ loading: true, error: null });
+          await api.companies.delete(id);
+
+          const companies = get().companies.filter(
+            (company) => company.id !== id
+          );
+          set({ companies, loading: false });
+        } catch (error) {
+          console.error("Delete company error:", error);
           set({ error: error.message, loading: false });
           throw error;
         }
@@ -133,6 +227,7 @@ const useAppStore = create(
           teams: [],
           performanceReports: [],
           users: [],
+          companies: [],
         });
       },
 
@@ -324,7 +419,6 @@ const useAppStore = create(
         }
       },
 
-      // Team actions
       addTeam: async (team) => {
         try {
           set({ loading: true, error: null });

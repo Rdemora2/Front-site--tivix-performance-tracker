@@ -1,11 +1,35 @@
-const API_BASE_URL = `${
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
-}${import.meta.env.VITE_API_PREFIX || "/api/v1"}`;
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || "/api"}${
+  import.meta.env.VITE_API_PREFIX || "/v1"
+}`;
 
 export const tokenUtils = {
-  get: () => localStorage.getItem("token"),
-  set: (token) => localStorage.setItem("token", token),
-  remove: () => localStorage.removeItem("token"),
+  get: () => {
+    try {
+      return localStorage.getItem("token");
+    } catch {
+      console.warn("LocalStorage access denied");
+      return null;
+    }
+  },
+
+  set: (token) => {
+    try {
+      if (!token || typeof token !== "string" || !token.includes(".")) {
+        throw new Error("Invalid token format");
+      }
+      localStorage.setItem("token", token);
+    } catch (e) {
+      console.warn("Failed to store token:", e.message);
+    }
+  },
+
+  remove: () => {
+    try {
+      localStorage.removeItem("token");
+    } catch {
+      console.warn("Failed to remove token");
+    }
+  },
 
   isValid: () => {
     const token = tokenUtils.get();
@@ -36,19 +60,40 @@ export const hasPermission = (action, resource) => {
   if (!payload || !payload.role) return false;
 
   const { role } = payload;
-  if (role === "admin") return true;
 
-  // Exclusão é permitida apenas para administradores
-  if (action === "delete") return false;
-
-  if (
-    role === "manager" &&
-    ["teams", "developers", "reports"].includes(resource)
-  ) {
-    return ["create", "update", "read"].includes(action);
+  if (import.meta.env.VITE_ENVIRONMENT === "development") {
+    console.log(
+      `hasPermission check: action=${action}, resource=${resource}, role=${role}`
+    );
   }
 
-  return action === "read";
+  if (role === "admin") return true;
+
+  if (resource === "companies") return false;
+
+  if (role === "manager") {
+    if (
+      action === "delete" &&
+      (resource === "users" || resource === "developers")
+    ) {
+      if (import.meta.env.VITE_ENVIRONMENT === "development") {
+        console.log(`Manager delete permission granted for ${resource}`);
+      }
+      return true;
+    }
+
+    if (["teams", "developers", "reports", "users"].includes(resource)) {
+      const allowed = ["create", "update", "read"].includes(action);
+      if (import.meta.env.VITE_ENVIRONMENT === "development") {
+        console.log(`Manager ${action} permission for ${resource}: ${allowed}`);
+      }
+      return allowed;
+    }
+  }
+
+  if (action === "read") return true;
+
+  return false;
 };
 
 const apiRequest = async (endpoint, options = {}) => {
@@ -110,19 +155,28 @@ export const authAPI = {
       body: JSON.stringify(userData),
     }),
 
+  updateUser: (id, userData) =>
+    apiRequest(`/auth/users/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(userData),
+    }),
+
+  deleteUser: (id) =>
+    apiRequest(`/auth/users/${id}`, {
+      method: "DELETE",
+    }),
+
   changePassword: (passwordData) =>
     apiRequest("/auth/change-password", {
       method: "POST",
       body: JSON.stringify(passwordData),
     }),
-  // Definir nova senha no primeiro acesso
   setNewPassword: (passwordData) =>
     apiRequest("/auth/set-new-password", {
       method: "POST",
       body: JSON.stringify(passwordData),
     }),
 
-  // Listar usuários (Admin apenas)
   getUsers: () => apiRequest("/auth/users"),
 
   profile: () => apiRequest("/auth/profile"),
@@ -220,10 +274,34 @@ export const performanceReportsAPI = {
   getStats: () => apiRequest("/performance-reports/stats"),
 };
 
+export const companiesAPI = {
+  getAll: () => apiRequest("/companies"),
+
+  getById: (id) => apiRequest(`/companies/${id}`),
+
+  create: (companyData) =>
+    apiRequest("/companies", {
+      method: "POST",
+      body: JSON.stringify(companyData),
+    }),
+
+  update: (id, companyData) =>
+    apiRequest(`/companies/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(companyData),
+    }),
+
+  delete: (id) =>
+    apiRequest(`/companies/${id}`, {
+      method: "DELETE",
+    }),
+};
+
 export default {
   auth: authAPI,
   init: initAPI,
   teams: teamsAPI,
   developers: developersAPI,
   performanceReports: performanceReportsAPI,
+  companies: companiesAPI,
 };

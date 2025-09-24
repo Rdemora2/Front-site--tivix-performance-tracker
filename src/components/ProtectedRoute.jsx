@@ -19,8 +19,14 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     const { role } = payload;
 
     if (requiredRole) {
-      if (role !== requiredRole && role !== "admin") {
-        return <Navigate to="/unauthorized" replace />;
+      if (Array.isArray(requiredRole)) {
+        if (!requiredRole.includes(role) && role !== "admin") {
+          return <Navigate to="/unauthorized" replace />;
+        }
+      } else {
+        if (role !== requiredRole && role !== "admin") {
+          return <Navigate to="/unauthorized" replace />;
+        }
       }
     }
 
