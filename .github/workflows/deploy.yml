@@ -123,7 +123,7 @@ jobs:
             docker builder prune -af
 
             echo "🚀 Pulling latest images (no cache)..."
-            docker compose pull --no-parallel frontend
+            docker compose pull frontend
 
             echo "🔄 Starting containers with complete recreate..."
             docker compose up -d --force-recreate --renew-anon-volumes frontend
