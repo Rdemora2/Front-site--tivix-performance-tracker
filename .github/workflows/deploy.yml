@@ -12,13 +12,54 @@ jobs:
       packages: write
 
     steps:
-      - name: ⬇️ Checkout Repository
+      - name: ⬇️ Checkout Repository (Clean)
         uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+
+      - name: 🧹 Clean Build Environment
+        run: |
+          echo "🗑️ Cleaning any existing artifacts..."
+          rm -rf dist/ node_modules/ .vite/ .cache/
+          echo "✅ Environment cleaned"
 
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: 📦 Install Dependencies (Fresh)
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --no-cache --prefer-online
+
+      - name: 🏗️ Build Application (No Cache)
+        run: |
+          rm -rf dist/
+          npm run build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_API_PREFIX: ${{ vars.VITE_API_PREFIX }}
+          VITE_ENVIRONMENT: production
+          NODE_ENV: production
+
+      - name: 🧪 Verify Build Output
+        run: |
+          echo "📁 Build directory contents:"
+          ls -la dist/
+          echo "📊 Build size:"
+          du -sh dist/
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Build failed - index.html not found"
+            exit 1
+          fi
+          echo "✅ Build verification passed"
+
+      - name: 🐋 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: image=moby/buildkit:buildx-stable-1
 
       - name: 🔑 Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -27,17 +68,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_PAT }}
 
-      - name: 🚀 Build and Push Docker Image
+      - name: 🚀 Build and Push Docker Image (No Cache)
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          platforms: linux/amd64
+          no-cache: true
+          pull: true
           build-args: |
             VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
             VITE_API_PREFIX=${{ vars.VITE_API_PREFIX }}
-          tags: ghcr.io/rdemora2/front-site--tivix-performance-tracker:latest
+            VITE_ENVIRONMENT=production
+            NODE_ENV=production
+          tags: |
+            ghcr.io/rdemora2/front-site--tivix-performance-tracker:latest
+            ghcr.io/rdemora2/front-site--tivix-performance-tracker:${{ github.sha }}
 
-      - name: 🛰️ Deploy to VPS via SSH
+      - name: 🛰️ Deploy to VPS via SSH (No Cache)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -48,11 +96,38 @@ jobs:
             echo "🔑 Logging into GitHub Container Registry..."
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             echo "✅ Logged in to VPS"
-            cd /home/tivixadmin/tivix-vps-infra/docker/stacks/app-tivix-performance-tracker # <-- LINHA CORRIGIDA
-            echo "🚀 Pulling new image..."
-            docker compose pull frontend
-            echo "⬆️ Restarting container..."
-            docker compose up -d --no-deps frontend
-            echo "🧹 Pruning old images..."
-            docker image prune -af
-            echo "🎉 Deployment successful!"
+            
+            cd /home/tivixadmin/tivix-vps-infra/docker/stacks/app-tivix-performance-tracker
+            echo "📋 Current directory: $(pwd)"
+            
+            echo "🛑 Stopping and removing current containers..."
+            docker compose down --remove-orphans --volumes || true
+            
+            echo "🧹 Cleaning all Docker cache and old images..."
+            docker system prune -af --volumes
+            docker builder prune -af
+            
+            echo "🚀 Pulling latest images (no cache)..."
+            docker compose pull --no-parallel frontend
+            
+            echo "🔄 Starting containers with complete recreate..."
+            docker compose up -d --force-recreate --renew-anon-volumes frontend
+            
+            echo "⏳ Waiting for container to be healthy..."
+            sleep 15
+            
+            echo "🔍 Verifying deployment..."
+            if docker compose ps frontend | grep -q "Up"; then
+              echo "✅ Container is running successfully"
+            else
+              echo "❌ Container failed to start"
+              docker compose logs --tail=50 frontend
+              exit 1
+            fi
+            
+            echo "📊 Final container status:"
+            docker compose ps frontend
+            docker stats --no-stream frontend || true
+            
+            echo "🎉 Fresh deployment completed successfully!"
+            echo "� Deploy time: $(date)"
