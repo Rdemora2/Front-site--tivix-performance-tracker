@@ -1,11 +1,24 @@
 services:
   frontend-performancetracker:
-    build: .
+    build:
+      context: .
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+        - VITE_API_PREFIX=${VITE_API_PREFIX}
+        - VITE_ENVIRONMENT=${VITE_ENVIRONMENT}
+        - NODE_ENV=${NODE_ENV}
+        - VITE_APP_TITLE=${VITE_APP_TITLE}
+        - VITE_APP_VERSION=${VITE_APP_VERSION}
+        - VITE_ENABLE_ANALYTICS=${VITE_ENABLE_ANALYTICS}
+        - VITE_ENABLE_ERROR_REPORTING=${VITE_ENABLE_ERROR_REPORTING}
+        - VITE_ENABLE_DEV_TOOLS=${VITE_ENABLE_DEV_TOOLS}
     image: frontend-performancetracker-tivix:latest
     container_name: frontend-performancetracker-tivix
     restart: unless-stopped
     env_file:
+      - ./.env.production
       - ./.env.nginx
+      - ./.env
     networks:
       - web
     labels:

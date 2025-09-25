@@ -197,3 +197,5 @@ FakesAssemblies/
 
 # Enviroment variables
 .env
+.env.production
+.env.nginx
