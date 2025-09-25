@@ -6,8 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:clean": "rm -rf dist node_modules/.vite && npm run build",
+    "build:fresh": "rm -rf node_modules package-lock.json && npm install && npm run build",
+    "build:production": "NODE_ENV=production vite build",
+    "build:docker": "docker build -t tivix-performance-tracker .",
+    "build:docker-clean": "docker build --no-cache -t tivix-performance-tracker .",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "lint:fix": "eslint . --fix",
+    "preview": "vite preview",
+    "preview:production": "vite build && vite preview",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules/.vite .npm .cache",
+    "clean:all": "rm -rf dist node_modules package-lock.json .vite .npm .cache",
+    "test:build": "npm run build && npm run preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

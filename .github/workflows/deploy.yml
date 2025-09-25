@@ -1,4 +1,4 @@
-name: Build and Deploy Frontend
+name: Build and Deploy Frontend (Clean Build)
 
 on:
   push:
@@ -21,33 +21,46 @@ jobs:
       - name: 🧹 Clean Build Environment
         run: |
           echo "🗑️ Cleaning any existing artifacts..."
-          rm -rf dist/ node_modules/ .vite/ .cache/
+          rm -rf dist/ node_modules/ .vite/ .cache/ .npm/
           echo "✅ Environment cleaned"
 
-      - name: ⚙️ Setup Node.js
+      - name: ⚙️ Setup Node.js (No Cache)
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
-      - name: 📦 Install Dependencies (Fresh)
+      - name: 📦 Install Dependencies (Fresh Install)
         run: |
-          rm -rf node_modules package-lock.json
-          npm install --prefer-online --no-audit --no-fund
+          echo "🔄 Removendo package-lock.json para instalação completamente limpa..."
+          rm -rf node_modules package-lock.json .npm
+          npm install --prefer-online --no-audit --no-fund --no-cache
+        env:
+          CI: true
 
-      - name: 🏗️ Build Application (No Cache)
+      - name: 🔍 Lint Code
+        run: npm run lint
+
+      - name: 🏗️ Build Application (Clean Build)
         run: |
-          rm -rf dist/
+          echo "🧹 Limpando cache de build..."
+          rm -rf dist/ .vite/
           npm run build
         env:
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
           VITE_API_PREFIX: ${{ vars.VITE_API_PREFIX }}
           VITE_ENVIRONMENT: production
           NODE_ENV: production
+          CI: true
 
       - name: 🧪 Verify Build Output
         run: |
           echo "📁 Build directory contents:"
           ls -la dist/
+          echo "📊 Build size analysis:"
+          du -sh dist/*
+          echo "🔍 Critical files check:"
+          test -f dist/index.html || exit 1
+          test -d dist/assets || exit 1
           echo "📊 Build size:"
           du -sh dist/
           if [ ! -f "dist/index.html" ]; then
@@ -96,26 +109,26 @@ jobs:
             echo "🔑 Logging into GitHub Container Registry..."
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             echo "✅ Logged in to VPS"
-            
+
             cd /home/tivixadmin/tivix-vps-infra/docker/stacks/app-tivix-performance-tracker
             echo "📋 Current directory: $(pwd)"
-            
+
             echo "🛑 Stopping and removing current containers..."
             docker compose down --remove-orphans --volumes || true
-            
+
             echo "🧹 Cleaning all Docker cache and old images..."
             docker system prune -af --volumes
             docker builder prune -af
-            
+
             echo "🚀 Pulling latest images (no cache)..."
             docker compose pull --no-parallel frontend
-            
+
             echo "🔄 Starting containers with complete recreate..."
             docker compose up -d --force-recreate --renew-anon-volumes frontend
-            
+
             echo "⏳ Waiting for container to be healthy..."
             sleep 15
-            
+
             echo "🔍 Verifying deployment..."
             if docker compose ps frontend | grep -q "Up"; then
               echo "✅ Container is running successfully"
@@ -124,10 +137,10 @@ jobs:
               docker compose logs --tail=50 frontend
               exit 1
             fi
-            
+
             echo "📊 Final container status:"
             docker compose ps frontend
             docker stats --no-stream frontend || true
-            
+
             echo "🎉 Fresh deployment completed successfully!"
             echo "� Deploy time: $(date)"
