@@ -9,7 +9,7 @@ server {
     add_header X-Content-Type-Options nosniff always;
     add_header X-XSS-Protection "1; mode=block" always;
 
-    add_header Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:* http://apiperformancetracker.tivix.com.br https://apiperformancetracker.tivix.com.br;" always;
+    add_header Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:* http://apiperformancetracker.tivix.com.br https://apiperformancetracker.tivix.com.br;" always;
 
     location / {
         try_files $uri $uri/ /index.html;

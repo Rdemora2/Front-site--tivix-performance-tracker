@@ -21,7 +21,7 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://${API_DOMAIN} wss://${API_DOMAIN}; frame-ancestors 'none';" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://${API_DOMAIN} wss://${API_DOMAIN}; frame-ancestors 'none';" always;
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     limit_req zone=frontend burst=50 nodelay;
