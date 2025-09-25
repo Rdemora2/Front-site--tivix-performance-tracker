@@ -6,7 +6,6 @@ import { fileURLToPath, URL } from "node:url";
 export default defineConfig(({ mode }) => ({
   plugins: [
     react({
-      jsxImportSource: "@emotion/react",
       babel: {
         plugins:
           mode === "production" ? ["babel-plugin-react-remove-properties"] : [],
