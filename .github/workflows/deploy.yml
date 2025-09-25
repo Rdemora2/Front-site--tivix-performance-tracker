@@ -22,6 +22,8 @@ jobs:
         run: |
           echo "🗑️ Cleaning any existing artifacts..."
           rm -rf dist/ node_modules/ .vite/ .cache/ .npm/
+          echo "🧹 Cleaning npm cache..."
+          npm cache clean --force || true
           echo "✅ Environment cleaned"
 
       - name: ⚙️ Setup Node.js (No Cache)
@@ -33,7 +35,7 @@ jobs:
         run: |
           echo "🔄 Removendo package-lock.json para instalação completamente limpa..."
           rm -rf node_modules package-lock.json .npm
-          npm install --prefer-online --no-audit --no-fund --no-cache
+          npm install --prefer-online --no-audit --no-fund
         env:
           CI: true
 
