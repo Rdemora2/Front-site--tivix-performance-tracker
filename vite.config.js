@@ -21,6 +21,11 @@ export default defineConfig(({ mode }) => ({
           ui: ["@mantine/core", "@mantine/hooks"],
         },
       },
+      external: (id) => {
+        return (
+          id.includes("cloudflareinsights.com") || id.includes("beacon.min.js")
+        );
+      },
     },
   },
 
