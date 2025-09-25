@@ -36,7 +36,9 @@ RUN addgroup -g 1001 -S nginx-app && \
     chown -R nginx-app:nginx-app /usr/share/nginx/html && \
     chown -R nginx-app:nginx-app /var/cache/nginx && \
     chown -R nginx-app:nginx-app /var/log/nginx && \
-    chown -R nginx-app:nginx-app /etc/nginx/conf.d
+    chown -R nginx-app:nginx-app /etc/nginx/conf.d && \
+    mkdir -p /tmp && \
+    chown -R nginx-app:nginx-app /tmp
 
 USER nginx-app
 
@@ -45,4 +47,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off; pid /tmp/nginx.pid;"]
