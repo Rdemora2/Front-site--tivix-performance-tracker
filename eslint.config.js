@@ -30,11 +30,10 @@ export default [
       ],
     },
   },
-  // Configuração específica para componentes UI
   {
     files: ["src/components/ui/*.{js,jsx}"],
     rules: {
-      "react-refresh/only-export-components": "off", // Desabilita warning para componentes UI
+      "react-refresh/only-export-components": "off",
     },
   },
 ];
