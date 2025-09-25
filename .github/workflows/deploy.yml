@@ -45,7 +45,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "✅ Logged in to VPS"
-            cd /home/tivixadmin/docker/stacks/app-tivix-performance-tracker
+            cd /home/tivixadmin/tivix-vps-infra/docker/stacks/app-tivix-performance-tracker # <-- LINHA CORRIGIDA
             echo "🚀 Pulling new image..."
             docker compose pull frontend
             echo "⬆️ Restarting container..."
