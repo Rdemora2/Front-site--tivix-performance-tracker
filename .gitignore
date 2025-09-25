@@ -161,6 +161,10 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+dist/
+.vite/
+.cache/
+*.tsbuildinfo
 bower_components/
 
 # RIA/Silverlight projects
