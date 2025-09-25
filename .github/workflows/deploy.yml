@@ -32,7 +32,7 @@ jobs:
       - name: 📦 Install Dependencies (Fresh)
         run: |
           rm -rf node_modules package-lock.json
-          npm install --no-cache --prefer-online
+          npm install --prefer-online --no-audit --no-fund
 
       - name: 🏗️ Build Application (No Cache)
         run: |
