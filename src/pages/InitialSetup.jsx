@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Card, 
-  Container, 
-  Title, 
-  TextInput, 
-  PasswordInput, 
-  Button, 
-  Text, 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  Container,
+  Title,
+  TextInput,
+  PasswordInput,
+  Button,
+  Text,
   Alert,
   Stack,
-  LoadingOverlay
-} from '@mantine/core';
-import { IconAlertCircle, IconUserPlus, IconShield } from '@tabler/icons-react';
-import api from '../services/api';
+  LoadingOverlay,
+} from "@mantine/core";
+import { IconAlertCircle, IconUserPlus, IconShield } from "@tabler/icons-react";
+import api from "../services/api";
 
 const InitialSetup = () => {
   const [adminData, setAdminData] = useState({
-    installKey: 'TIVIX_INSTALL_2024',
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    installKey: "TIVIX_INSTALL_2024",
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,10 +34,10 @@ const InitialSetup = () => {
       try {
         const response = await api.init.check();
         if (response.initialized || response.userCount > 0) {
-          navigate('/login', { replace: true });
+          navigate("/login", { replace: true });
         }
       } catch (error) {
-        console.error('Error checking init status:', error);
+        console.error("Error checking init status:", error);
       } finally {
         setChecking(false);
       }
@@ -49,10 +49,10 @@ const InitialSetup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     if (adminData.password !== adminData.confirmPassword) {
-      setError('As senhas não coincidem');
+      setError("As senhas não coincidem");
       setLoading(false);
       return;
     }
@@ -60,18 +60,18 @@ const InitialSetup = () => {
     try {
       const { confirmPassword: _, ...createData } = adminData;
       await api.init.createAdmin(createData);
-      navigate('/login', { replace: true });
+      navigate("/login", { replace: true });
     } catch (error) {
-      setError(error.message || 'Erro ao criar administrador');
+      setError(error.message || "Erro ao criar administrador");
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (field) => (e) => {
-    setAdminData(prev => ({
+    setAdminData((prev) => ({
       ...prev,
-      [field]: e.target.value
+      [field]: e.target.value,
     }));
   };
 
@@ -87,8 +87,12 @@ const InitialSetup = () => {
     <Container size="xs" pt={80}>
       <Card shadow="md" padding="xl" radius="md" withBorder>
         <Stack spacing="md">
-          <div style={{ textAlign: 'center' }}>
-            <IconShield size={60} color="var(--mantine-color-blue-6)" style={{ marginBottom: 16 }} />
+          <div style={{ textAlign: "center" }}>
+            <IconShield
+              size={60}
+              color="var(--mantine-color-blue-6)"
+              style={{ marginBottom: 16 }}
+            />
             <Title order={2} mb="xs">
               Configuração Inicial
             </Title>
@@ -112,7 +116,7 @@ const InitialSetup = () => {
               <TextInput
                 label="Chave de instalação"
                 value={adminData.installKey}
-                onChange={handleChange('installKey')}
+                onChange={handleChange("installKey")}
                 required
                 readOnly
                 variant="filled"
@@ -122,15 +126,15 @@ const InitialSetup = () => {
                 label="Nome do administrador"
                 placeholder="Nome completo"
                 value={adminData.name}
-                onChange={handleChange('name')}
+                onChange={handleChange("name")}
                 required
               />
 
               <TextInput
                 label="Email"
-                placeholder="admin@tivix.com"
+                placeholder="admin@email.com"
                 value={adminData.email}
-                onChange={handleChange('email')}
+                onChange={handleChange("email")}
                 required
                 type="email"
               />
@@ -139,7 +143,7 @@ const InitialSetup = () => {
                 label="Senha"
                 placeholder="Senha do administrador"
                 value={adminData.password}
-                onChange={handleChange('password')}
+                onChange={handleChange("password")}
                 required
               />
 
@@ -147,7 +151,7 @@ const InitialSetup = () => {
                 label="Confirmar senha"
                 placeholder="Confirme a senha"
                 value={adminData.confirmPassword}
-                onChange={handleChange('confirmPassword')}
+                onChange={handleChange("confirmPassword")}
                 required
               />
 

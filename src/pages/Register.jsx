@@ -1,42 +1,42 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { 
-  Card, 
-  Container, 
-  Title, 
-  TextInput, 
-  PasswordInput, 
-  Button, 
-  Text, 
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Card,
+  Container,
+  Title,
+  TextInput,
+  PasswordInput,
+  Button,
+  Text,
   Alert,
   Stack,
   Anchor,
-  Select
-} from '@mantine/core';
-import { IconAlertCircle, IconUserPlus } from '@tabler/icons-react';
-import useAppStore from '../store/useAppStore';
+  Select,
+} from "@mantine/core";
+import { IconAlertCircle, IconUserPlus } from "@tabler/icons-react";
+import useAppStore from "../store/useAppStore";
 
 const Register = () => {
   const [userData, setUserData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'user'
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "user",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const navigate = useNavigate();
-  const register = useAppStore(state => state.register);
+  const register = useAppStore((state) => state.register);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     if (userData.password !== userData.confirmPassword) {
-      setError('As senhas não coincidem');
+      setError("As senhas não coincidem");
       setLoading(false);
       return;
     }
@@ -44,19 +44,19 @@ const Register = () => {
     try {
       const { confirmPassword: _, ...registrationData } = userData;
       await register(registrationData);
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
-      setError(error.message || 'Erro ao criar conta');
+      setError(error.message || "Erro ao criar conta");
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (field) => (value) => {
-    const actualValue = typeof value === 'string' ? value : value.target.value;
-    setUserData(prev => ({
+    const actualValue = typeof value === "string" ? value : value.target.value;
+    setUserData((prev) => ({
       ...prev,
-      [field]: actualValue
+      [field]: actualValue,
     }));
   };
 
@@ -64,7 +64,7 @@ const Register = () => {
     <Container size="xs" pt={80}>
       <Card shadow="md" padding="xl" radius="md" withBorder>
         <Stack spacing="md">
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: "center" }}>
             <Title order={2} mb="xs">
               Criar Conta
             </Title>
@@ -89,15 +89,15 @@ const Register = () => {
                 label="Nome completo"
                 placeholder="Seu nome"
                 value={userData.name}
-                onChange={handleChange('name')}
+                onChange={handleChange("name")}
                 required
               />
 
               <TextInput
                 label="Email"
-                placeholder="seu.email@tivix.com"
+                placeholder="seu.email@email.com"
                 value={userData.email}
-                onChange={handleChange('email')}
+                onChange={handleChange("email")}
                 required
                 type="email"
               />
@@ -106,10 +106,10 @@ const Register = () => {
                 label="Função"
                 placeholder="Selecione sua função"
                 value={userData.role}
-                onChange={handleChange('role')}
+                onChange={handleChange("role")}
                 data={[
-                  { value: 'user', label: 'Usuário' },
-                  { value: 'manager', label: 'Gerente' }
+                  { value: "user", label: "Usuário" },
+                  { value: "manager", label: "Gerente" },
                 ]}
                 required
               />
@@ -118,7 +118,7 @@ const Register = () => {
                 label="Senha"
                 placeholder="Sua senha"
                 value={userData.password}
-                onChange={handleChange('password')}
+                onChange={handleChange("password")}
                 required
               />
 
@@ -126,7 +126,7 @@ const Register = () => {
                 label="Confirmar senha"
                 placeholder="Confirme sua senha"
                 value={userData.confirmPassword}
-                onChange={handleChange('confirmPassword')}
+                onChange={handleChange("confirmPassword")}
                 required
               />
 
@@ -142,7 +142,7 @@ const Register = () => {
           </form>
 
           <Text ta="center" size="sm" c="dimmed">
-            Já tem uma conta?{' '}
+            Já tem uma conta?{" "}
             <Anchor component={Link} to="/login">
               Faça login aqui
             </Anchor>

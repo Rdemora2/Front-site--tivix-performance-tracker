@@ -75,7 +75,7 @@ const Login = () => {
             <Stack spacing="md">
               <TextInput
                 label="Email"
-                placeholder="seu.email@tivix.com"
+                placeholder="seu.email@email.com"
                 value={credentials.email}
                 onChange={handleChange("email")}
                 required
